@@ -8,6 +8,12 @@ export class Restaurant {
   @Field(() => String)
   name: string;
   //Nullabe 셋팅을 통해 ?연산자로 활용 가능
-  @Field(() => Boolean, { nullable: true })
-  isGood?: boolean;
+  @Field(() => Boolean)
+  isVegan: boolean;
+
+  @Field(() => String)
+  address: string;
+
+  @Field(() => String)
+  ownerName: string;
 }
