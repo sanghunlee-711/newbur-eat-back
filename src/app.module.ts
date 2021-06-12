@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { ConfigModule } from '@nestjs/config';
 import { GraphQLModule } from '@nestjs/graphql';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { RestaurantsModule } from './restaurants/restaurants.module';
@@ -6,7 +7,14 @@ import { RestaurantsModule } from './restaurants/restaurants.module';
 @Module({
   //forRoot는 모듈의 루트를 잡아주기 위해서 import하는것
   imports: [
+    ConfigModule.forRoot({
+      isGlobal: true, //어디서든 .env에 접근가능
+      envFilePath: process.env.NODE_ENV === 'dev' ? '.env.dev' : '.env.test',
+    }),
     TypeOrmModule.forRoot({
+      //보통 이런 중요한건 .env에 넣는데 nodejs에서는 dotenv모듈을 사용했었음
+      //nestjs에서는 다른방식도 가능 공식문서의 configuration부분 참고
+
       //https://github.com/typeorm/typeorm 여기에 config 옵션들 있다.
       type: 'postgres',
       host: 'localhost',
