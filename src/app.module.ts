@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { GraphQLModule } from '@nestjs/graphql';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import * as Joi from 'joi';
 import { RestaurantsModule } from './restaurants/restaurants.module';
 
 @Module({
@@ -11,6 +12,14 @@ import { RestaurantsModule } from './restaurants/restaurants.module';
       isGlobal: true, //어디서든 .env에 접근가능
       envFilePath: process.env.NODE_ENV === 'dev' ? '.env.dev' : '.env.test',
       ignoreEnvFile: process.env.NODE_ENV === 'prod', //배포용일때는 .env파일을 사용하지 않기 위한 옵션
+      validationSchema: Joi.object({
+        NODE_ENV: Joi.string().valid('dev', 'prod').required(), //환경변수(process.env)의 유효성 검사를 위해 Joi 모듈을 통해 검사
+        DB_HOST: Joi.string().required(),
+        DB_PORT: Joi.string().required(),
+        DB_USERNAME: Joi.string().required(),
+        DB_PASSWORD: Joi.string().required(),
+        DB_NAME: Joi.string().required(),
+      }),
     }),
     TypeOrmModule.forRoot({
       //보통 이런 중요한건 .env에 넣는데 nodejs에서는 dotenv모듈을 사용했었음
