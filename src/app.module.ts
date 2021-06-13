@@ -10,6 +10,7 @@ import { RestaurantsModule } from './restaurants/restaurants.module';
     ConfigModule.forRoot({
       isGlobal: true, //어디서든 .env에 접근가능
       envFilePath: process.env.NODE_ENV === 'dev' ? '.env.dev' : '.env.test',
+      ignoreEnvFile: process.env.NODE_ENV === 'prod', //배포용일때는 .env파일을 사용하지 않기 위한 옵션
     }),
     TypeOrmModule.forRoot({
       //보통 이런 중요한건 .env에 넣는데 nodejs에서는 dotenv모듈을 사용했었음
@@ -17,11 +18,11 @@ import { RestaurantsModule } from './restaurants/restaurants.module';
 
       //https://github.com/typeorm/typeorm 여기에 config 옵션들 있다.
       type: 'postgres',
-      host: 'localhost',
-      port: 5432,
-      username: 'cloudlee',
-      password: '1234', //postgres는 기본적으로 localhost로 호출하면 pw를 묻지 않는다
-      database: 'nuber-eats',
+      host: process.env.DB_HOST,
+      port: +process.env.DB_PORT,
+      username: process.env.DB_USERNAME,
+      password: process.env.DB_PASSWORD, //postgres는 기본적으로 localhost로 호출하면 pw를 묻지 않는다
+      database: process.env.DB_NAME,
       synchronize: true, //typeorm이d db를 연결할때 현재상태로 migration한다는 뜻임
       logging: true, //무슨 일이 일어나는지 console에 나타냄
     }),
