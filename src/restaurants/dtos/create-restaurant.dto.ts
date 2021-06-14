@@ -8,19 +8,23 @@ import { IsString, Length } from 'class-validator';
 //input 타입은 그냥 하나의 객체로 보면 됨 (필드 전체를 가진)
 @ArgsType()
 export class CreateRestaurantDto {
-  @Field((type) => String)
+  @Field(() => String)
   @IsString()
   @Length(5, 10)
   name: string;
 
-  @Field((type) => Boolean)
+  @Field(() => Boolean)
   isVegan: boolean;
 
-  @Field((type) => String)
+  @Field(() => String)
   @IsString()
   address: string;
 
   @Field(() => String)
   @IsString()
   ownerName: string;
+
+  @Field(() => String)
+  @IsString()
+  categoryName: string;
 }
