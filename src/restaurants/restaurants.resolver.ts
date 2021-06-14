@@ -1,5 +1,6 @@
 import { Args, Mutation, Query, Resolver } from '@nestjs/graphql';
 import { CreateRestaurantDto } from './dtos/create-restaurant.dto';
+import { UpdateRestaurantDto } from './dtos/update-restaurant.dto';
 import { Restaurant } from './entities/restaurant.entity';
 import { RestaurantService } from './restaurants.service';
 
@@ -15,9 +16,10 @@ export class RestaurantResolver {
   restaurants(): Promise<Restaurant[]> {
     return this.restaurantService.getAll();
   }
-  @Mutation(() => Boolean)
+
   //createRestaurant 에 일일이 arguments로서 restaurant.entity.ts에 있는 필드들을 필요한 것만 정의해서 Arg를 길게 가져 가도 됨
   // 그러나 inputType을 설정하여 객체를 전체로 넘겨서 쓸 수 도 있음
+  @Mutation(() => Boolean)
   async createRestaurant(
     @Args('input') createRestaurantDto: CreateRestaurantDto,
   ): Promise<boolean> {
@@ -29,5 +31,12 @@ export class RestaurantResolver {
       console.error(error);
       return false;
     }
+  }
+
+  @Mutation(() => Boolean)
+  async updateRestaurant(
+    @Args('input') UpdateRestaurantDto: UpdateRestaurantDto,
+  ) {
+    return true;
   }
 }
