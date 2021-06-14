@@ -3,6 +3,7 @@ import { ConfigModule } from '@nestjs/config';
 import { GraphQLModule } from '@nestjs/graphql';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import * as Joi from 'joi';
+import { Restaurant } from './restaurants/entities/restaurant.entity';
 import { RestaurantsModule } from './restaurants/restaurants.module';
 
 @Module({
@@ -32,8 +33,10 @@ import { RestaurantsModule } from './restaurants/restaurants.module';
       username: process.env.DB_USERNAME,
       password: process.env.DB_PASSWORD, //postgres는 기본적으로 localhost로 호출하면 pw를 묻지 않는다
       database: process.env.DB_NAME,
-      synchronize: true, //typeorm이d db를 연결할때 현재상태로 migration한다는 뜻임
+      synchronize: process.env.NODE_ENV !== 'prod', //typeorm이d db를 연결할때 현재상태로 migration한다는 뜻임
+      //production에서는 실제 데이터를 가지고 있으므로 위와같이 조건으로 처리
       logging: true, //무슨 일이 일어나는지 console에 나타냄
+      entities: [Restaurant],
     }),
     GraphQLModule.forRoot({
       // autoSchemaFile: join(process.cwd(), 'src/schema.gql'),
