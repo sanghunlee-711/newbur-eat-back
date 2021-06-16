@@ -38,5 +38,22 @@ export class UsersResolver {
   }
 
   @Mutation(() => LoginOutput)
-  async login(@Args('input') loginInput: LoginInput): Promise<LoginOutput> {}
+  async login(@Args('input') loginInput: LoginInput): Promise<LoginOutput> {
+    try {
+      const { ok, error, token } = await this.usersService.login(loginInput); //미친
+
+      return {
+        ok,
+        error,
+        token,
+      };
+
+      //return this.usersService.login(loginInput); 로 바꿔줘도 같은결과이나 내가 나중에 못알아볼것 같다
+    } catch (error) {
+      return {
+        ok: false,
+        error,
+      };
+    }
+  }
 }
