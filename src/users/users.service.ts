@@ -65,7 +65,7 @@ export class UsersService {
 
       return {
         ok: true,
-        token: 'toekekekekekekeken',
+        token,
       };
     } catch (error) {
       return {
