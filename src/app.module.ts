@@ -23,7 +23,7 @@ import { UsersModule } from './users/users.module';
         DB_PASSWORD: Joi.string().required(),
         DB_NAME: Joi.string().required(),
         //https://randomkeygen.com/ 사이트를 가면 좋은 랜덤키를 얻어올 수 있다.
-        SECRET_KEY: Joi.string().required(),
+        PRIVATE_KEY: Joi.string().required(),
       }),
     }),
     TypeOrmModule.forRoot({
@@ -42,7 +42,9 @@ import { UsersModule } from './users/users.module';
     }),
     UsersModule,
     CommonModule,
-    JwtModule.forRoot(),
+    JwtModule.forRoot({
+      privateKey: process.env.PRIVATE_KEY,
+    }),
   ],
   controllers: [],
   providers: [],
