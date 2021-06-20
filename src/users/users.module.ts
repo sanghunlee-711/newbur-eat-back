@@ -10,5 +10,6 @@ import { UsersService } from './users.service';
   //service에서 this.config.get("SECRET_KEY")로 사용해주기 위해서이다.
   imports: [TypeOrmModule.forFeature([User])],
   providers: [UsersResolver, UsersService],
+  exports: [UsersService],
 })
 export class UsersModule {}

@@ -62,6 +62,7 @@ export class UsersService {
       }
       const token = this.jwtService.sign(user.id);
 
+      //3. make jwt and give it to user
       return {
         ok: true,
         token,
@@ -72,7 +73,9 @@ export class UsersService {
         error,
       };
     }
+  }
 
-    //3. make jwt and git it to user
+  async findByID(id: number): Promise<User> {
+    return this.users.findOne({ id });
   }
 }
