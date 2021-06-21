@@ -1,6 +1,7 @@
 import { UseGuards } from '@nestjs/common';
 import { Args, Mutation, Query, Resolver } from '@nestjs/graphql';
 import { AuthGuard } from 'src/auth/auth.guard';
+import { AuthUser } from 'src/auth/auth.user.decorator';
 import { LoginInput, LoginOutput } from 'src/restaurants/dtos/login.dto';
 import {
   CreateAccountInput,
@@ -63,5 +64,8 @@ export class UsersResolver {
   //현재 로그인 되어있는 유저를 리턴해줌
   @Query(() => User)
   @UseGuards(AuthGuard)
-  me() {}
+  me(@AuthUser() authUser: User) {
+    console.log('@@@@', authUser);
+    return authUser;
+  }
 }
