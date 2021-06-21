@@ -1,4 +1,6 @@
-import { Args, Context, Mutation, Query, Resolver } from '@nestjs/graphql';
+import { UseGuards } from '@nestjs/common';
+import { Args, Mutation, Query, Resolver } from '@nestjs/graphql';
+import { AuthGuard } from 'src/auth/auth.guard';
 import { LoginInput, LoginOutput } from 'src/restaurants/dtos/login.dto';
 import {
   CreateAccountInput,
@@ -60,11 +62,6 @@ export class UsersResolver {
   //사용자가 누군지 판단하기 위해 토큰을 받고 인증을 해주는 쿼리
   //현재 로그인 되어있는 유저를 리턴해줌
   @Query(() => User)
-  me(@Context() context) {
-    if (!context.user) {
-      return;
-    } else {
-      return context.user;
-    }
-  }
+  @UseGuards(AuthGuard)
+  me() {}
 }
