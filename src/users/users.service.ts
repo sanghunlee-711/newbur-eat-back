@@ -80,7 +80,11 @@ export class UsersService {
     return this.users.findOne({ id });
   }
 
-  async editProfile(userId: number, editProfileInput: EditProfileInput) {
+  async editProfile(
+    userId: number,
+    { email, password }: EditProfileInput,
+  ): Promise<User> {
+    //1.
     //update의 경우 Entitiy를 업데이트하지만 Db에 존재하는지 확인을 하지 않음
     //이 프로젝트의 경우 cookie에서 token을 가져와서 userId를 받아오는 것이 전제로 되어있음
     // 그래서 userId를 신뢰할 수 있다는 전제하에 update()메서드를 사용하게 됨
@@ -88,10 +92,25 @@ export class UsersService {
     //그리고 로그인 되어있지 않다면 누구도 eidtprofile을건드릴 수 없는 구조임
     // console.log('@@@@', userId, email, password);
 
+    //2.
     //destructuring으로 email, password를 따로 받을 시에 password가
     //기입되지 않으면 undefined로 나타나서 db에 넣을 수 없으므로 에러가발생함
     //그래서 edtiProfileInput을 그대로 받고 스프레드복사를 통해서 null값으로 넘겨주는 것
-    console.log('@@@', editProfileInput);
-    this.users.update(userId, { ...editProfileInput });
+
+    //3.
+    //update는 entity를 체크하지 않으므로 @BeforeUPdate를 호출하지 못하게 됨
+    //save는 entities를 체크하고 없으면 db에 create and Insert하고 있으면update를 체크하게 된다.
+
+    const user = await this.users.findOne(userId);
+
+    if (email) {
+      user.email = email;
+    }
+
+    if (password) {
+      user.password = password;
+    }
+
+    return this.users.save(user);
   }
 }
