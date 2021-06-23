@@ -6,11 +6,14 @@ import { Repository } from 'typeorm';
 import { CreateAccountInput } from './dtos/create-account.dto';
 import { EditProfileInput } from './dtos/edit-profile.dto';
 import { User } from './entities/user.entity';
+import { Verification } from './entities/verification.entity';
 
 @Injectable()
 export class UsersService {
   constructor(
     @InjectRepository(User) private readonly users: Repository<User>,
+    @InjectRepository(Verification)
+    private readonly verification: Repository<Verification>,
     private readonly jwtService: JwtService,
   ) {}
 
@@ -28,7 +31,16 @@ export class UsersService {
         //make Error -> already registered account case
         return { ok: false, error: '중복된 이메일로 이미 유저가 존재합니다.' };
       }
-      await this.users.save(this.users.create({ email, password, role }));
+      const user = await this.users.save(
+        this.users.create({ email, password, role }),
+      );
+      //make new User's verification code;
+      //with using BeforeInserHook in verification Entity
+      await this.verification.save(
+        this.verification.create({
+          user,
+        }),
+      );
       return { ok: true };
     } catch (error) {
       //make error and return error
@@ -105,6 +117,16 @@ export class UsersService {
 
     if (email) {
       user.email = email;
+      user.verified = false;
+
+      //verification code make or update
+      //with using BeforeInserHook in verification Entity
+
+      await this.verification.save(
+        this.verification.create({
+          user,
+        }),
+      );
     }
 
     if (password) {

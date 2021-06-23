@@ -1,6 +1,7 @@
 import { Field, InputType, ObjectType } from '@nestjs/graphql';
 import { CoreEntity } from 'src/common/entities/core.entity';
-import { Column, Entity, JoinColumn, OneToOne } from 'typeorm';
+import { BeforeInsert, Column, Entity, JoinColumn, OneToOne } from 'typeorm';
+import { v4 as uuidv4 } from 'uuid';
 import { User } from './user.entity';
 
 @InputType({ isAbstract: true })
@@ -22,4 +23,12 @@ export class Verification extends CoreEntity {
   @OneToOne(() => User)
   @JoinColumn()
   user: User;
+
+  @BeforeInsert()
+  //user.service에서 createAccount와 editProfile두 곳
+  //모두 verification을 생성할 수 있도록 하기 위해서 entity에서 코드 생성 로직을 짜게 됨.
+  createCode(): void {
+    //this.code = Math.random().toString(36).substring(2);
+    this.code = uuidv4();
+  }
 }
