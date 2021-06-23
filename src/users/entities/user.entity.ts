@@ -58,4 +58,8 @@ export class User extends CoreEntity {
       throw new InternalServerErrorException();
     }
   }
+
+  @Column({ default: false })
+  @Field(() => Boolean)
+  verified: boolean;
 }
