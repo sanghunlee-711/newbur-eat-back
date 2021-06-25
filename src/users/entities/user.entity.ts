@@ -29,7 +29,7 @@ export class User extends CoreEntity {
   @IsEmail()
   email: string;
 
-  @Column()
+  @Column({ select: false }) //typeorm으로 user객체를 불러올때 패스워드 컬럼을 제외하는 설정
   @Field(() => String)
   password: string;
 
@@ -41,11 +41,14 @@ export class User extends CoreEntity {
   @BeforeInsert() //before save in DB with save method in service.ts do this method, when users instance is made by create method
   @BeforeUpdate()
   async hasPassword(): Promise<void> {
-    try {
-      this.password = await bcrypt.hash(this.password, 10);
-    } catch (error) {
-      console.error(error);
-      throw new InternalServerErrorException();
+    if (this.password) {
+      //만약 save, update등의 메서드에서 password를 넘겼을때만 hash를 진행하게 만듦(이렇게 조건을 걸어두며 해시한것을 다시 해시하지는 않음)
+      try {
+        this.password = await bcrypt.hash(this.password, 10);
+      } catch (error) {
+        console.error(error);
+        throw new InternalServerErrorException();
+      }
     }
   }
 
@@ -58,4 +61,8 @@ export class User extends CoreEntity {
       throw new InternalServerErrorException();
     }
   }
+
+  @Column({ default: false })
+  @Field(() => Boolean)
+  verified: boolean;
 }

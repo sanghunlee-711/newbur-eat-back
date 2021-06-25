@@ -9,6 +9,7 @@ import {
 } from './dtos/create-account.dto';
 import { EditProfileInput, EditProfileOutput } from './dtos/edit-profile.dto';
 import { UserProfileInput, UserProfileOutput } from './dtos/user-profile.dto';
+import { VerifyEmailInput, VerifyEmailOutput } from './dtos/verify-email.dto';
 import { User } from './entities/user.entity';
 import { UsersService } from './users.service';
 
@@ -20,41 +21,12 @@ export class UsersResolver {
   async createAccount(
     @Args('input') createAccountInput: CreateAccountInput,
   ): Promise<CreateAccountOutPut> {
-    try {
-      const { ok, error } = await this.usersService.createAccount(
-        createAccountInput,
-      );
-
-      return {
-        ok,
-        error,
-      };
-    } catch (error) {
-      return {
-        error,
-        ok: false,
-      };
-    }
+    return this.usersService.createAccount(createAccountInput);
   }
 
   @Mutation(() => LoginOutput)
   async login(@Args('input') loginInput: LoginInput): Promise<LoginOutput> {
-    try {
-      const { ok, error, token } = await this.usersService.login(loginInput); //미친
-
-      return {
-        ok,
-        error,
-        token,
-      };
-
-      //return this.usersService.login(loginInput); 로 바꿔줘도 같은결과이나 내가 나중에 못알아볼것 같다
-    } catch (error) {
-      return {
-        ok: false,
-        error,
-      };
-    }
+    return this.usersService.login(loginInput);
   }
 
   //사용자가 누군지 판단하기 위해 토큰을 받고 인증을 해주는 쿼리
@@ -67,28 +39,12 @@ export class UsersResolver {
   }
 
   //user profile을 보여주는 query
-
   @UseGuards(AuthGuard)
   @Query(() => UserProfileOutput)
   async userProfile(
     @Args() userProfileInput: UserProfileInput,
   ): Promise<UserProfileOutput> {
-    try {
-      const user = await this.usersService.findByID(userProfileInput.userId);
-      if (!user) {
-        throw Error();
-      }
-
-      return {
-        ok: true,
-        user,
-      };
-    } catch (e) {
-      return {
-        error: 'User Not Found',
-        ok: false,
-      };
-    }
+    return this.usersService.findByID(userProfileInput.userId);
   }
 
   @UseGuards(AuthGuard)
@@ -97,16 +53,13 @@ export class UsersResolver {
     @AuthUser() authUser: User,
     @Args('input') editProfileInput: EditProfileInput,
   ): Promise<EditProfileOutput> {
-    try {
-      await this.usersService.editProfile(authUser.id, editProfileInput);
-      return {
-        ok: true,
-      };
-    } catch (error) {
-      return {
-        ok: false,
-        error,
-      };
-    }
+    return this.usersService.editProfile(authUser.id, editProfileInput);
+  }
+
+  @Mutation(() => VerifyEmailOutput) // VerifyEmailOutput for graphQL
+  async verifyEmail(
+    @Args('input') verifyEmailInput: VerifyEmailInput, // VerifyEmailInput for Nest js
+  ): Promise<VerifyEmailOutput> {
+    return this.usersService.verifyEmail(verifyEmailInput.code);
   }
 }
