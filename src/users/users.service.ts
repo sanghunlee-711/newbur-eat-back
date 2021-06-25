@@ -4,7 +4,9 @@ import { JwtService } from 'src/jwt/jwt.service';
 import { LoginInput } from 'src/users/dtos/login.dto';
 import { Repository } from 'typeorm';
 import { CreateAccountInput } from './dtos/create-account.dto';
-import { EditProfileInput } from './dtos/edit-profile.dto';
+import { EditProfileInput, EditProfileOutput } from './dtos/edit-profile.dto';
+import { UserProfileOutput } from './dtos/user-profile.dto';
+import { VerifyEmailOutput } from './dtos/verify-email.dto';
 import { User } from './entities/user.entity';
 import { Verification } from './entities/verification.entity';
 
@@ -93,14 +95,24 @@ export class UsersService {
     }
   }
 
-  async findByID(id: number): Promise<User> {
-    return this.users.findOne({ id });
+  async findByID(id: number): Promise<UserProfileOutput> {
+    try {
+      const user = await this.users.findOne({ id });
+      if (user) {
+        return {
+          ok: true,
+          user: user,
+        };
+      }
+    } catch (error) {
+      return { ok: false, error: 'User Not Found' };
+    }
   }
 
   async editProfile(
     userId: number,
     { email, password }: EditProfileInput,
-  ): Promise<User> {
+  ): Promise<EditProfileOutput> {
     //1.
     //update의 경우 Entitiy를 업데이트하지만 Db에 존재하는지 확인을 하지 않음
     //이 프로젝트의 경우 cookie에서 token을 가져와서 userId를 받아오는 것이 전제로 되어있음
@@ -118,49 +130,54 @@ export class UsersService {
     //update는 entity를 체크하지 않으므로 @BeforeUPdate를 호출하지 못하게 됨
     //save는 entities를 체크하고 없으면 db에 create and Insert하고 있으면update를 체크하게 된다.
 
-    const user = await this.users.findOne(userId);
+    try {
+      const user = await this.users.findOne(userId);
 
-    if (email) {
-      user.email = email;
-      user.verified = false;
+      if (email) {
+        user.email = email;
+        user.verified = false;
+        //verification code make or update
+        //with using BeforeInserHook in verification Entity
 
-      //verification code make or update
-      //with using BeforeInserHook in verification Entity
+        await this.verification.save(
+          this.verification.create({
+            user,
+          }),
+        );
+      }
 
-      await this.verification.save(
-        this.verification.create({
-          user,
-        }),
-      );
+      if (password) {
+        user.password = password;
+      }
+      this.users.save(user);
+      return {
+        ok: true,
+      };
+    } catch (error) {
+      return {
+        ok: false,
+        error,
+      };
     }
-
-    if (password) {
-      user.password = password;
-    }
-
-    return this.users.save(user);
   }
 
-  async verifyEmail(code: string): Promise<boolean> {
+  async verifyEmail(code: string): Promise<VerifyEmailOutput> {
     try {
       const verification = await this.verification.findOne(
         { code },
-
         { relations: ['user'] }, //이렇게하면 sequelize의 includes 메서드처럼 관련된 유저의 정보를 가져올수도 있음
       );
 
       if (verification) {
-        console.log(verification); //TypeORM에서 relations나 loadRelations... :true로 셋팅하면 관련된 것을 받을 수 있음.
+        // console.log(verification); //TypeORM에서 relations나 loadRelations... :true로 셋팅하면 관련된 것을 받을 수 있음.
         verification.user.verified = true;
-        console.log(verification.user);
         this.users.save(verification.user);
-        return true;
+        return { ok: true };
       }
 
-      throw new Error();
+      return { ok: false, error: 'Verification not found' };
     } catch (error) {
-      console.log(error);
-      return false;
+      return { ok: false, error };
     }
   }
 }

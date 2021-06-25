@@ -21,41 +21,44 @@ export class UsersResolver {
   async createAccount(
     @Args('input') createAccountInput: CreateAccountInput,
   ): Promise<CreateAccountOutPut> {
-    try {
-      const { ok, error } = await this.usersService.createAccount(
-        createAccountInput,
-      );
+    return this.usersService.createAccount(createAccountInput);
 
-      return {
-        ok,
-        error,
-      };
-    } catch (error) {
-      return {
-        error,
-        ok: false,
-      };
-    }
+    // try {
+    //   const { ok, error } = await this.usersService.createAccount(
+    //     createAccountInput,
+    //   );
+
+    //   return {
+    //     ok,
+    //     error,
+    //   };
+    // } catch (error) {
+    //   return {
+    //     error,
+    //     ok: false,
+    //   };
+    // }
   }
 
   @Mutation(() => LoginOutput)
   async login(@Args('input') loginInput: LoginInput): Promise<LoginOutput> {
-    try {
-      const { ok, error, token } = await this.usersService.login(loginInput); //미친
+    return this.usersService.login(loginInput);
+    // try {
+    //   const { ok, error, token } = await this.usersService.login(loginInput); //미친
 
-      return {
-        ok,
-        error,
-        token,
-      };
+    //   return {
+    //     ok,
+    //     error,
+    //     token,
+    //   };
 
-      //return this.usersService.login(loginInput); 로 바꿔줘도 같은결과이나 내가 나중에 못알아볼것 같다
-    } catch (error) {
-      return {
-        ok: false,
-        error,
-      };
-    }
+    //   //return this.usersService.login(loginInput); 로 바꿔줘도 같은결과이나 내가 나중에 못알아볼것 같다
+    // } catch (error) {
+    //   return {
+    //     ok: false,
+    //     error,
+    //   };
+    // }
   }
 
   //사용자가 누군지 판단하기 위해 토큰을 받고 인증을 해주는 쿼리
@@ -74,22 +77,7 @@ export class UsersResolver {
   async userProfile(
     @Args() userProfileInput: UserProfileInput,
   ): Promise<UserProfileOutput> {
-    try {
-      const user = await this.usersService.findByID(userProfileInput.userId);
-      if (!user) {
-        throw Error();
-      }
-
-      return {
-        ok: true,
-        user,
-      };
-    } catch (e) {
-      return {
-        error: 'User Not Found',
-        ok: false,
-      };
-    }
+    return this.usersService.findByID(userProfileInput.userId);
   }
 
   @UseGuards(AuthGuard)
@@ -98,6 +86,8 @@ export class UsersResolver {
     @AuthUser() authUser: User,
     @Args('input') editProfileInput: EditProfileInput,
   ): Promise<EditProfileOutput> {
+    return this.usersService.editProfile(authUser.id, editProfileInput);
+
     try {
       await this.usersService.editProfile(authUser.id, editProfileInput);
       return {
@@ -111,20 +101,10 @@ export class UsersResolver {
     }
   }
 
-  @Mutation(() => VerifyEmailOutput)
+  @Mutation(() => VerifyEmailOutput) // VerifyEmailOutput for graphQL
   async verifyEmail(
-    @Args('input') verifyEmailInput: VerifyEmailInput,
+    @Args('input') verifyEmailInput: VerifyEmailInput, // VerifyEmailInput for Nest js
   ): Promise<VerifyEmailOutput> {
-    try {
-      await this.usersService.verifyEmail(verifyEmailInput.code);
-      return {
-        ok: true,
-      };
-    } catch (error) {
-      return {
-        ok: false,
-        error,
-      };
-    }
+    return this.usersService.verifyEmail(verifyEmailInput.code);
   }
 }
