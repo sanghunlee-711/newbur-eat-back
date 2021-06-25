@@ -22,43 +22,11 @@ export class UsersResolver {
     @Args('input') createAccountInput: CreateAccountInput,
   ): Promise<CreateAccountOutPut> {
     return this.usersService.createAccount(createAccountInput);
-
-    // try {
-    //   const { ok, error } = await this.usersService.createAccount(
-    //     createAccountInput,
-    //   );
-
-    //   return {
-    //     ok,
-    //     error,
-    //   };
-    // } catch (error) {
-    //   return {
-    //     error,
-    //     ok: false,
-    //   };
-    // }
   }
 
   @Mutation(() => LoginOutput)
   async login(@Args('input') loginInput: LoginInput): Promise<LoginOutput> {
     return this.usersService.login(loginInput);
-    // try {
-    //   const { ok, error, token } = await this.usersService.login(loginInput); //미친
-
-    //   return {
-    //     ok,
-    //     error,
-    //     token,
-    //   };
-
-    //   //return this.usersService.login(loginInput); 로 바꿔줘도 같은결과이나 내가 나중에 못알아볼것 같다
-    // } catch (error) {
-    //   return {
-    //     ok: false,
-    //     error,
-    //   };
-    // }
   }
 
   //사용자가 누군지 판단하기 위해 토큰을 받고 인증을 해주는 쿼리
@@ -71,7 +39,6 @@ export class UsersResolver {
   }
 
   //user profile을 보여주는 query
-
   @UseGuards(AuthGuard)
   @Query(() => UserProfileOutput)
   async userProfile(
@@ -87,18 +54,6 @@ export class UsersResolver {
     @Args('input') editProfileInput: EditProfileInput,
   ): Promise<EditProfileOutput> {
     return this.usersService.editProfile(authUser.id, editProfileInput);
-
-    try {
-      await this.usersService.editProfile(authUser.id, editProfileInput);
-      return {
-        ok: true,
-      };
-    } catch (error) {
-      return {
-        ok: false,
-        error,
-      };
-    }
   }
 
   @Mutation(() => VerifyEmailOutput) // VerifyEmailOutput for graphQL
