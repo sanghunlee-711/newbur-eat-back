@@ -56,7 +56,10 @@ export class UsersService {
   }: LoginInput): Promise<{ ok: boolean; error?: string; token?: string }> {
     //1. find user with email
     try {
-      const user = await this.users.findOne({ email });
+      const user = await this.users.findOne(
+        { email },
+        { select: ['password', 'id'] }, //password는 무조건 불러온다 뭐 이런건데 Sequelize의 개념과 유사함
+      );
 
       if (!user) {
         return {
@@ -73,6 +76,8 @@ export class UsersService {
           error: 'Wrong Password',
         };
       }
+      console.log('@@@@@', user);
+
       const token = this.jwtService.sign(user.id);
 
       //3. make jwt and give it to user
@@ -134,5 +139,28 @@ export class UsersService {
     }
 
     return this.users.save(user);
+  }
+
+  async verifyEmail(code: string): Promise<boolean> {
+    try {
+      const verification = await this.verification.findOne(
+        { code },
+
+        { relations: ['user'] }, //이렇게하면 sequelize의 includes 메서드처럼 관련된 유저의 정보를 가져올수도 있음
+      );
+
+      if (verification) {
+        console.log(verification); //TypeORM에서 relations나 loadRelations... :true로 셋팅하면 관련된 것을 받을 수 있음.
+        verification.user.verified = true;
+        console.log(verification.user);
+        this.users.save(verification.user);
+        return true;
+      }
+
+      throw new Error();
+    } catch (error) {
+      console.log(error);
+      return false;
+    }
   }
 }

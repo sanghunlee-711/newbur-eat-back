@@ -20,7 +20,7 @@ export class Verification extends CoreEntity {
   //반대로 verification으로 '부터' User'에' 접근하고 싶으면
   //@JoinColumn은 Verification class에 있어야한다
 
-  @OneToOne(() => User)
+  @OneToOne(() => User, { onDelete: 'CASCADE' }) //user를 삭제하면 verfication도 삭제하게 되는 옵션 -> CASCADE
   @JoinColumn()
   user: User;
 
