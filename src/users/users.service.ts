@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { JwtService } from 'src/jwt/jwt.service';
+import { MailService } from 'src/mail/mail.service';
 import { LoginInput, LoginOutput } from 'src/users/dtos/login.dto';
 import { Repository } from 'typeorm';
 import { CreateAccountInput } from './dtos/create-account.dto';
@@ -17,6 +18,7 @@ export class UsersService {
     @InjectRepository(Verification)
     private readonly verification: Repository<Verification>,
     private readonly jwtService: JwtService,
+    private readonly mailService: MailService,
   ) {}
 
   async createAccount({
@@ -38,11 +40,13 @@ export class UsersService {
       );
       //make new User's verification code;
       //with using BeforeInserHook in verification Entity
-      await this.verification.save(
+      const verification = await this.verification.save(
         this.verification.create({
           user,
         }),
       );
+
+      this.mailService.sendVerificationEmail(user.email, verification.code);
       return { ok: true };
     } catch (error) {
       //make error and return error
@@ -136,17 +140,19 @@ export class UsersService {
         //verification code make or update
         //with using BeforeInserHook in verification Entity
 
-        await this.verification.save(
+        const verification = await this.verification.save(
           this.verification.create({
             user,
           }),
         );
+        this.mailService.sendVerificationEmail(user.email, verification.code);
       }
 
       if (password) {
         user.password = password;
       }
       this.users.save(user);
+
       return {
         ok: true,
       };
