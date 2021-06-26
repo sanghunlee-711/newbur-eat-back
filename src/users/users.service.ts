@@ -169,6 +169,8 @@ export class UsersService {
         // console.log(verification); //TypeORM에서 relations나 loadRelations... :true로 셋팅하면 관련된 것을 받을 수 있음.
         verification.user.verified = true;
         this.users.save(verification.user);
+        //user당 하나의 verfication만 가질 수 있기때문에 기존에 verification에 있던것을 지워줌
+        await this.verification.delete(verification.id);
         return { ok: true };
       }
 
