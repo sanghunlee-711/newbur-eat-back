@@ -10,6 +10,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import * as Joi from 'joi';
 import { JwtMiddleware } from './jwt/jwt.middleware';
 import { JwtModule } from './jwt/jwt.module';
+import { MailModule } from './mail/mail.module';
 import { User } from './users/entities/user.entity';
 import { Verification } from './users/entities/verification.entity';
 import { UsersModule } from './users/users.module';
@@ -30,6 +31,9 @@ import { UsersModule } from './users/users.module';
         DB_NAME: Joi.string().required(),
         //https://randomkeygen.com/ 사이트를 가면 좋은 랜덤키를 얻어올 수 있다.
         PRIVATE_KEY: Joi.string().required(),
+        MAILGUN_API_KEY: Joi.string().required(),
+        MAILGUN_DOMAIN: Joi.string().required(),
+        MAILGUN_FROM_EMAIL: Joi.string().required(),
       }),
     }),
     TypeOrmModule.forRoot({
@@ -50,6 +54,11 @@ import { UsersModule } from './users/users.module';
     UsersModule,
     JwtModule.forRoot({
       privateKey: process.env.PRIVATE_KEY,
+    }),
+    MailModule.forRoot({
+      apiKey: process.env.MAILGUN_API_KEY,
+      domain: process.env.MAILGUN_DOMAIN,
+      fromEmail: process.env.MAILGUN_FROM_EMAIL,
     }),
   ],
   controllers: [],
