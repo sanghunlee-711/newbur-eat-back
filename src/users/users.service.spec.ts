@@ -106,7 +106,7 @@ describe('User Service', () => {
       });
     });
 
-    it('shold Create New User', async () => {
+    it('Shold Create New User', async () => {
       //Set Repositories Return value
       usersRepository.findOne.mockResolvedValue(undefined);
       usersRepository.create.mockReturnValue(createAccountArgs);
@@ -144,6 +144,16 @@ describe('User Service', () => {
       );
 
       expect(result).toEqual({ ok: true });
+    });
+
+    it('Should fail on exception', async () => {
+      usersRepository.findOne.mockRejectedValue(new Error('Hello Error'));
+      const result = await service.createAccount(createAccountArgs);
+      console.log(result);
+      expect(result).toEqual({
+        ok: false,
+        error: '계정을 생성할 수 없습니다.',
+      });
     });
   });
 

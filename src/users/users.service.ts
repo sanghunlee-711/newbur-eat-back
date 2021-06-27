@@ -52,7 +52,6 @@ export class UsersService {
       return { ok: true };
     } catch (error) {
       //make error and return error
-      console.error(error);
       return { ok: false, error: '계정을 생성할 수 없습니다.' };
     }
     //create User & hash password
