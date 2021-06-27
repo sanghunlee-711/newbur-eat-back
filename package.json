@@ -88,14 +88,14 @@
       "^.+\\.(t|j)s$": "ts-jest"
     },
     "collectCoverageFrom": [
-      "**/*.(t|j)s"
+      "**/*.service.(t|j)s"
     ],
     "coverageDirectory": "../coverage",
     "testEnvironment": "node",
     "coveragePathIgnorePatterns": [
       "node_modules",
       ".entity.ts",
-      ".constant.ts"
+      ".constants.ts"
     ]
   }
 }
