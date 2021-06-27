@@ -15,7 +15,7 @@ const mockRepository = () => ({
 });
 
 const mockJwtService = {
-  sign: jest.fn(),
+  sign: jest.fn(() => 'signed-token-return'),
   verify: jest.fn(),
 };
 
@@ -34,8 +34,9 @@ describe('User Service', () => {
   let usersRepository: MockRepository<User>;
   let verificationRepository: MockRepository<Verification>;
   let mailService: MailService;
+  let jwtService: JwtService;
 
-  beforeAll(async () => {
+  beforeEach(async () => {
     //1.테스트 하고 싶은 모듈을 만든다.
     const module = await Test.createTestingModule({
       //모듈로 Imports하고 싶은것들이 포함된다.
@@ -65,6 +66,7 @@ describe('User Service', () => {
     //2.만든 모듈에서 service만을 가져오는 방법
     service = module.get<UsersService>(UsersService);
     mailService = module.get<MailService>(MailService);
+    jwtService = module.get<JwtService>(JwtService);
     usersRepository = module.get(getRepositoryToken(User));
     verificationRepository = module.get(getRepositoryToken(Verification));
   });
@@ -106,7 +108,7 @@ describe('User Service', () => {
       });
     });
 
-    it('Shold Create New User', async () => {
+    it('Shold create New User', async () => {
       //Set Repositories Return value
       usersRepository.findOne.mockResolvedValue(undefined);
       usersRepository.create.mockReturnValue(createAccountArgs);
@@ -157,7 +159,65 @@ describe('User Service', () => {
     });
   });
 
-  it.todo('login');
+  describe('login', () => {
+    const loginArgs = {
+      email: 'test@test.com',
+      password: 'test@test.com',
+    };
+    it("Should fail if user doesn't exist", async () => {
+      usersRepository.findOne.mockResolvedValue(null);
+
+      const result = await service.login(loginArgs);
+      expect(usersRepository.findOne).toHaveBeenCalledTimes(1);
+      expect(usersRepository.findOne).toHaveBeenCalledWith(
+        expect.any(Object),
+        expect.any(Object),
+      );
+      expect(result).toEqual({
+        ok: false,
+        error: 'User not found',
+      });
+    });
+
+    it('Should fail if the password is wrong', async () => {
+      const mockedUser = {
+        id: 1,
+        checkPassword: jest.fn(() => Promise.resolve(false)), //이렇게하면 await user.checkPassword() 는 false 반환하게 됨 ㅎㅅㅎ
+      };
+
+      usersRepository.findOne.mockResolvedValue(mockedUser);
+      const result = await service.login(loginArgs);
+      expect(result).toEqual({
+        ok: false,
+        error: 'Wrong Password',
+      });
+    });
+
+    it('Should return token, if password correct', async () => {
+      const mockedUser = {
+        id: 1,
+        checkPassword: jest.fn(() => Promise.resolve(true)),
+      };
+
+      usersRepository.findOne.mockResolvedValue(mockedUser);
+      const result = await service.login(loginArgs);
+      expect(jwtService.sign).toHaveBeenCalledTimes(1);
+      expect(jwtService.sign).toHaveBeenCalledWith(expect.any(Number));
+      expect(result).toEqual({
+        ok: true,
+        token: 'signed-token-return',
+      });
+    });
+
+    it('Should fail on exception login', async () => {
+      usersRepository.findOne.mockRejectedValue(new Error());
+      const result = await service.login(loginArgs);
+      expect(result).toEqual({
+        ok: false,
+        error: 'Cant log user in',
+      });
+    });
+  });
   it.todo('findByID');
   it.todo('editProfile');
   it.todo('verifyEmail');
