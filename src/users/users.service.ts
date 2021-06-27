@@ -30,6 +30,7 @@ export class UsersService {
 
     try {
       const exists = await this.users.findOne({ email });
+      // console.log(exists);
 
       if (exists) {
         //make Error -> already registered account case
