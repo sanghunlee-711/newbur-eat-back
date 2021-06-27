@@ -30,11 +30,13 @@ export class UsersService {
 
     try {
       const exists = await this.users.findOne({ email });
+      // console.log(exists);
 
       if (exists) {
         //make Error -> already registered account case
         return { ok: false, error: '중복된 이메일로 이미 유저가 존재합니다.' };
       }
+
       const user = await this.users.save(
         this.users.create({ email, password, role }),
       );
@@ -50,7 +52,6 @@ export class UsersService {
       return { ok: true };
     } catch (error) {
       //make error and return error
-      console.error(error);
       return { ok: false, error: '계정을 생성할 수 없습니다.' };
     }
     //create User & hash password
