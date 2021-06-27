@@ -2,6 +2,7 @@ import { Test } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { JwtService } from 'src/jwt/jwt.service';
 import { MailService } from 'src/mail/mail.service';
+import { Repository } from 'typeorm';
 import { User } from './entities/user.entity';
 import { Verification } from './entities/verification.entity';
 import { UsersService } from './users.service';
@@ -22,10 +23,15 @@ const mockMailService = {
   sendVerificationEmail: jest.fn(),
 };
 
+type MockRepository<T = any> = Partial<
+  Record<keyof Repository<User>, jest.Mock>
+>;
+
 describe('User Service', () => {
   //유저 서비스를 테스트하게 됨.
 
   let service: UsersService;
+  let userRepository: MockRepository<User>;
   beforeAll(async () => {
     //1.테스트 하고 싶은 모듈을 만든다.
     const module = await Test.createTestingModule({
@@ -55,13 +61,25 @@ describe('User Service', () => {
 
     //2.만든 모듈에서 service만을 가져오는 방법
     service = module.get<UsersService>(UsersService);
+    userRepository = module.get(getRepositoryToken(User));
   });
 
   it('Should be defined', () => {
     expect(service).toBeDefined();
   });
 
-  it.todo('createAccount');
+  describe('createAccount', () => {
+    it('Should fail if user exists', () => {
+      //유저서비스의 createAccount 메서드 중 아래의 코드를 테스트 해봄
+      // 전체 반응을 테스트하는 것은 E2E테스트에 가깝고 unitTest의 경우 각 줄의 코드가
+      //원하는데로 정상작동하는지를 보는 것이기 때문
+      // const exists = await this.users.findOne({ email });
+      // if (exists) {
+      //   //make Error -> already registered account case
+      //   return { ok: false, error: '중복된 이메일로 이미 유저가 존재합니다.' };
+      // }
+    });
+  });
   it.todo('login');
   it.todo('findByID');
   it.todo('editProfile');

@@ -35,6 +35,7 @@ export class UsersService {
         //make Error -> already registered account case
         return { ok: false, error: '중복된 이메일로 이미 유저가 존재합니다.' };
       }
+
       const user = await this.users.save(
         this.users.create({ email, password, role }),
       );
