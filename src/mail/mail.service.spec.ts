@@ -50,7 +50,6 @@ describe('Mail Service', () => {
       //service.sendEmail = jest.fn();
 
       //2. 아래는 함수가 실제로 실행될 때 중간을 가로채서 원하는 설정을 할 수 있게 됨.
-      TEST_DOMAI;
       expect(service.sendEmail).toHaveBeenCalledTimes(1);
       expect(service.sendEmail).toHaveBeenCalledWith(
         'Verify Your Email',
