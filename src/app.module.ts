@@ -43,9 +43,9 @@ import { UsersModule } from './users/users.module';
       username: process.env.DB_USERNAME,
       password: process.env.DB_PASSWORD,
       database: process.env.DB_NAME,
-      synchronize:
+      synchronize: process.env.NODE_ENV !== 'prod',
+      logging:
         process.env.NODE_ENV !== 'prod' && process.env.NODE_ENV !== 'test',
-      logging: true,
       entities: [User, Verification],
     }),
     GraphQLModule.forRoot({
