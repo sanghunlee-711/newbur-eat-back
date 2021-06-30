@@ -3,7 +3,7 @@ import * as FormData from 'form-data';
 import got from 'got';
 import { CONFIG_OPTIONS } from 'src/common/common.constants';
 import { MailService } from './mail.service';
-
+//test
 const TEST_DOMAIN = 'test-domain';
 
 const MOCK_MAILOPTION = {
@@ -50,7 +50,7 @@ describe('Mail Service', () => {
       //service.sendEmail = jest.fn();
 
       //2. 아래는 함수가 실제로 실행될 때 중간을 가로채서 원하는 설정을 할 수 있게 됨.
-
+      TEST_DOMAI;
       expect(service.sendEmail).toHaveBeenCalledTimes(1);
       expect(service.sendEmail).toHaveBeenCalledWith(
         'Verify Your Email',
