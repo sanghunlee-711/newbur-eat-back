@@ -153,7 +153,6 @@ describe('User Service', () => {
     it('Should fail on exception', async () => {
       usersRepository.findOne.mockRejectedValue(new Error('Hello Error'));
       const result = await service.createAccount(createAccountArgs);
-      console.log(result);
       expect(result).toEqual({
         ok: false,
         error: '계정을 생성할 수 없습니다.',
@@ -307,7 +306,30 @@ describe('User Service', () => {
         error: 'Could not update profile',
       });
     });
+
+    it('should unique user', async () => {
+      const oldUser = {
+        email: 'bs@old',
+        verified: true,
+      };
+
+      const editProfileArgs = {
+        userId: 1,
+        input: { email: 'bs@new' },
+      };
+
+      usersRepository.findOne.mockRejectedValue(
+        oldUser.email === editProfileArgs.input.email ? new Error() : oldUser,
+      );
+
+      const result = await service.editProfile(1, { email: '1' });
+      expect(result).toEqual({
+        ok: false,
+        error: 'Could not update profile',
+      });
+    });
   });
+
   describe('verifyEmail', () => {
     it('should verify email', async () => {
       const mockVerification = {
