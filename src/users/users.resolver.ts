@@ -34,7 +34,6 @@ export class UsersResolver {
   @Query(() => User)
   @UseGuards(AuthGuard)
   me(@AuthUser() authUser: User) {
-    console.log('@@@@', authUser);
     return authUser;
   }
 

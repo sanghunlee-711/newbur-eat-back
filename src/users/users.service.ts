@@ -136,6 +136,11 @@ export class UsersService {
       if (email) {
         user.email = email;
         user.verified = false;
+        //one to one (user, verification) 관계 설정으로 유저 한명당 하나의 verification만 가질 수 있으므로
+        //verification이 false가 된 상태에서는 verfication table에서 해당 유저에 할당되어있는 verification 데이터를 지워줘야
+        // 다음 수정이나 변경 시 재할당이 가능함!
+        await this.verification.delete({ user: { id: user.id } });
+
         //verification code make or update
         //with using BeforeInserHook in verification Entity
 
@@ -156,6 +161,7 @@ export class UsersService {
         ok: true,
       };
     } catch (error) {
+      console.log('@@', error);
       return {
         ok: false,
         error: 'Could not update profile',

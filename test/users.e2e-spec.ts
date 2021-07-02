@@ -1,7 +1,10 @@
 import { INestApplication } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
+import { getRepositoryToken } from '@nestjs/typeorm';
+import { User } from 'src/users/entities/user.entity';
+import { Verification } from 'src/users/entities/verification.entity';
 import * as request from 'supertest';
-import { getConnection } from 'typeorm';
+import { getConnection, Repository } from 'typeorm';
 import { AppModule } from '../src/app.module';
 
 jest.mock('got', () => {
@@ -17,13 +20,25 @@ const testUser = {
 
 describe('UserModule (e2e)', () => {
   let app: INestApplication;
+  let userRepository: Repository<User>;
+  let verificationRepository: Repository<Verification>;
   let jwtToken: string;
+
+  const baseTest = () => request(app.getHttpServer()).post(GRAPHQL_ENDPOINT);
+  const publicTest = (query: string) => baseTest().send({ query });
+  const privateTest = (query: string) =>
+    baseTest().set('X-JWT', jwtToken).send({ query });
+
   beforeAll(async () => {
     const module: TestingModule = await Test.createTestingModule({
       imports: [AppModule],
     }).compile();
 
     app = module.createNestApplication();
+    userRepository = module.get<Repository<User>>(getRepositoryToken(User));
+    verificationRepository = module.get<Repository<Verification>>(
+      getRepositoryToken(Verification),
+    );
     await app.init();
   });
 
@@ -34,10 +49,8 @@ describe('UserModule (e2e)', () => {
 
   describe('createAccount', () => {
     it('should create account', () => {
-      return request(app.getHttpServer())
-        .post(GRAPHQL_ENDPOINT)
-        .send({
-          query: `mutation{
+      return publicTest(
+        `mutation{
             createAccount(input:{
               email: "${testUser.EMAIL}",
               password: "${testUser.PASSWORD}",
@@ -47,7 +60,7 @@ describe('UserModule (e2e)', () => {
               error
             }
           }`,
-        })
+      )
         .expect(200)
         .expect((res) => {
           expect(res.body.data.createAccount.ok).toBeTruthy();
@@ -56,10 +69,7 @@ describe('UserModule (e2e)', () => {
     });
 
     it('should fail if create exist', () => {
-      return request(app.getHttpServer())
-        .post(GRAPHQL_ENDPOINT)
-        .send({
-          query: `
+      return publicTest(`
           mutation{
             createAccount(input:{
               email: "${testUser.EMAIL}",
@@ -70,8 +80,7 @@ describe('UserModule (e2e)', () => {
               error
             }
           }
-          `,
-        })
+          `)
         .expect(200)
         .expect((res) => {
           const {
@@ -88,10 +97,7 @@ describe('UserModule (e2e)', () => {
 
   describe('login', () => {
     it('should log in with correct credentials(token)', () => {
-      return request(app.getHttpServer())
-        .post(GRAPHQL_ENDPOINT)
-        .send({
-          query: `
+      return publicTest(`
           mutation{
             login(input:{
               email: "${testUser.EMAIL}",
@@ -102,8 +108,7 @@ describe('UserModule (e2e)', () => {
               token
             }
           }
-          `,
-        })
+          `)
         .expect(200)
         .expect((res) => {
           const {
@@ -120,10 +125,8 @@ describe('UserModule (e2e)', () => {
     });
 
     it('should not be able to login with wrong credential(code)', () => {
-      return request(app.getHttpServer())
-        .post(GRAPHQL_ENDPOINT)
-        .send({
-          query: `
+      return publicTest(
+        `
         mutation{
           login(input:{
             email: "${testUser.EMAIL}",
@@ -135,7 +138,7 @@ describe('UserModule (e2e)', () => {
           }
         }
         `,
-        })
+      )
         .expect(200)
         .expect((res) => {
           const {
@@ -151,8 +154,240 @@ describe('UserModule (e2e)', () => {
     });
   });
 
-  it.todo('userProfile');
-  it.todo('me');
-  it.todo('verifyEmail');
-  it.todo('editProfile');
+  describe('userProfile', () => {
+    let userId: number;
+    beforeAll(async () => {
+      const [user] = await userRepository.find();
+      //이렇게 각 describe에서 beforeAll 메서드와 module.get을 통해 가져온 userRepository를 통해
+      //실제 DB에 존재하는 user를 가지고 올 수 있다.
+      //이 방식외에 어찌됬든 DB를 마지막에 DROP시키기때문에
+      //id는 1로써 유저 한명일 것이라는 당연한 추측으로 id를 1로 하여 테스트를 할 수 도있다.
+      userId = user.id;
+    });
+
+    it('should see a user profile', () => {
+      return privateTest(
+        `
+          {
+            userProfile(userId:${userId}){
+              ok
+              error
+                user {
+                  id
+                }
+            }
+          }
+        `,
+      )
+        .expect(200)
+        .expect((res) => {
+          const {
+            body: {
+              data: {
+                userProfile: {
+                  ok,
+                  error,
+                  user: { id },
+                },
+              },
+            },
+          } = res;
+          expect(ok).toBeTruthy();
+          expect(error).toBe(null);
+          expect(id).toBe(userId);
+        });
+    });
+
+    //findByID
+    it('should not find a profile', () => {
+      return privateTest(
+        `
+          {
+            userProfile(userId:${userId}222){
+              ok
+              error
+                user {
+                  id
+                }
+            }
+          }
+        `,
+      )
+        .expect(200)
+        .expect((res) => {
+          const {
+            body: {
+              data: {
+                userProfile: { ok, error, user },
+              },
+            },
+          } = res;
+          expect(ok).toBeFalsy();
+          expect(error).toBe('User Not Found');
+          expect(user).toBe(null);
+        });
+    });
+  });
+
+  describe('me', () => {
+    it('should find my profile', () => {
+      return privateTest(
+        `
+          {
+            me {
+              email
+            }
+          }
+          `,
+      )
+        .expect(200)
+        .expect((res) => {
+          const {
+            body: {
+              data: {
+                me: { email },
+              },
+            },
+          } = res;
+          expect(email).toBe(testUser.EMAIL);
+        });
+    });
+
+    it('should not allow logged out user', () => {
+      return publicTest(
+        `
+        {
+          me {
+            email
+          }
+        }
+        `,
+      )
+        .expect(200)
+        .expect((res) => {
+          const {
+            body: { errors },
+          } = res;
+          const [error] = errors;
+          expect(error.message).toBe('Forbidden resource');
+        });
+    });
+  });
+
+  describe('editProfile', () => {
+    const NEW_EMAIL = 'test@change.com';
+
+    it('should change Profile', () => {
+      return privateTest(
+        `
+          mutation{
+            editProfile(input:{
+              email: "${NEW_EMAIL}"
+            }) {
+              ok
+              error
+            }
+          }
+        `,
+      )
+        .expect(200)
+        .expect((res) => {
+          const {
+            body: {
+              data: {
+                editProfile: { ok, error },
+              },
+            },
+          } = res;
+
+          expect(ok).toBeTruthy();
+          expect(error).toBe(null);
+        });
+    });
+
+    it('should have new email', () => {
+      return privateTest(
+        `
+        {
+          me{
+            email
+          }
+        }
+        `,
+      )
+        .expect(200)
+        .expect((res) => {
+          const {
+            body: {
+              data: {
+                me: { email },
+              },
+            },
+          } = res;
+          expect(email).toBe(NEW_EMAIL);
+        });
+    });
+  });
+
+  describe('verifyEmail', () => {
+    let verificationCode: string;
+
+    beforeAll(async () => {
+      const [verification] = await verificationRepository.find(); // userProfiler과 동일한 원리
+      console.log(verification);
+      verificationCode = verification.code;
+    });
+
+    it('should verify email', () => {
+      return publicTest(
+        `
+          mutation {
+            verifyEmail(input:{
+              code:"${verificationCode}"
+            }){
+              ok
+              error
+            }
+          }
+        `,
+      )
+        .expect(200)
+        .expect((res) => {
+          const {
+            body: {
+              data: {
+                verifyEmail: { ok, error },
+              },
+            },
+          } = res;
+          expect(ok).toBe(true);
+          expect(error).toBe(null);
+        });
+    });
+
+    it('should fail on verification code not found', () => {
+      return publicTest(
+        `
+        mutation {
+          verifyEmail(input:{
+            code:"codeForFailTest"
+          }){
+            ok
+            error
+          }
+        }
+      `,
+      ).expect((res) => {
+        const {
+          body: {
+            data: {
+              verifyEmail: { ok, error },
+            },
+          },
+        } = res;
+        expect(ok).toBe(false);
+        expect(error).toBe('Verification not found');
+      });
+    });
+  });
 });
