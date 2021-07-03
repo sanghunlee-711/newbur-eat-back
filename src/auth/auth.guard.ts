@@ -1,20 +1,35 @@
 import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
+import { Reflector } from '@nestjs/core';
 import { GqlExecutionContext } from '@nestjs/graphql';
+import { User } from 'src/users/entities/user.entity';
+import { AllowedRoles } from './role.decorator';
+
+//authentication => who are you
+//authorization => can you access this ?
 
 @Injectable()
 export class AuthGuard implements CanActivate {
-  //CanActivate는 true를 리턴하면 request를 진행시키고 false면 request를 멈추게한다.
-  //여기서의 context는 graphql의 context가 아닌
-  //request pipeline의 context인데 이미 graphql의 context를 통해
-  //request에 user를 할당한 상태라 뭐 ..
+  constructor(private readonly reflector: Reflector) {}
 
   canActivate(context: ExecutionContext) {
-    //http context -> gql context방식으로 변경
+    const roles = this.reflector.get<AllowedRoles>(
+      'roles',
+      context.getHandler(),
+    );
+    if (!roles) {
+      return true;
+    }
+
     const gqlContext = GqlExecutionContext.create(context).getContext();
-    const user = gqlContext.user;
+    const user: User = gqlContext.user;
     if (!user) {
       return false;
     }
-    return true;
+
+    if (roles.includes('Any')) {
+      return true;
+    }
+
+    return roles.includes(user.role);
   }
 }
