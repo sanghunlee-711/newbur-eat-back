@@ -16,3 +16,10 @@ The Backend Folder
 
 - Created Account
 - Log In
+
+## Restaurant Model
+
+- name
+- category (foreign key)
+- address
+- coverImage
