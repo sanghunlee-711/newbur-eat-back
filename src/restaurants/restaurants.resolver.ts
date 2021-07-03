@@ -1,5 +1,6 @@
 import { Args, Mutation, Resolver } from '@nestjs/graphql';
 import { AuthUser } from 'src/auth/auth.user.decorator';
+import { Role } from 'src/auth/role.decorator';
 import { User } from 'src/users/entities/user.entity';
 import {
   CreateRestaurantInput,
@@ -16,6 +17,7 @@ export class RestaurantResolver {
   //createRestaurant 에 일일이 arguments로서 restaurant.entity.ts에 있는 필드들을 필요한 것만 정의해서 Arg를 길게 가져 가도 됨
   // 그러나 inputType을 설정하여 객체를 전체로 넘겨서 쓸 수 도 있음
   @Mutation(() => CreateRestaurantOutPut)
+  @Role(['Owner'])
   async createRestaurant(
     @AuthUser() authUser: User,
     @Args('input') createRestaurantInput: CreateRestaurantInput,

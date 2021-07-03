@@ -13,10 +13,10 @@ import { BeforeInsert, BeforeUpdate, Column, Entity, OneToMany } from 'typeorm';
 
 // type UserRole = 'client' | 'owenr' | 'delivery';
 
-enum UserRole {
-  Client,
-  Owner,
-  Delivery,
+export enum UserRole {
+  Client = 'Client',
+  Owner = 'Owner',
+  Delivery = 'Delivery',
 }
 
 registerEnumType(UserRole, { name: 'UserRole' });
