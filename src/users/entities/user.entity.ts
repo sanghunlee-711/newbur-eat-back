@@ -6,9 +6,10 @@ import {
   registerEnumType,
 } from '@nestjs/graphql';
 import * as bcrypt from 'bcrypt';
-import { IsEmail, IsEnum } from 'class-validator';
+import { IsBoolean, IsEmail, IsEnum, IsString } from 'class-validator';
 import { CoreEntity } from 'src/common/entities/core.entity';
-import { BeforeInsert, BeforeUpdate, Column, Entity } from 'typeorm';
+import { Restaurant } from 'src/restaurants/entities/restaurant.entity';
+import { BeforeInsert, BeforeUpdate, Column, Entity, OneToMany } from 'typeorm';
 
 // type UserRole = 'client' | 'owenr' | 'delivery';
 
@@ -20,7 +21,7 @@ enum UserRole {
 
 registerEnumType(UserRole, { name: 'UserRole' });
 
-@InputType({ isAbstract: true })
+@InputType('UserInputType', { isAbstract: true })
 @ObjectType()
 @Entity()
 export class User extends CoreEntity {
@@ -31,12 +32,22 @@ export class User extends CoreEntity {
 
   @Column({ select: false }) //typeorm으로 user객체를 불러올때 패스워드 컬럼을 제외하는 설정
   @Field(() => String)
+  @IsString()
   password: string;
 
   @Column({ type: 'enum', enum: UserRole }) // for DB
   @Field(() => UserRole) //for graphql
   @IsEnum(UserRole)
   role: UserRole;
+
+  @Column({ default: false })
+  @Field(() => Boolean)
+  @IsBoolean()
+  verified: boolean;
+
+  @Field(() => [Restaurant])
+  @OneToMany(() => Restaurant, (restaurant) => restaurant.owner)
+  restaurants: Restaurant[];
 
   @BeforeInsert() //before save in DB with save method in service.ts do this method, when users instance is made by create method
   @BeforeUpdate()
@@ -61,8 +72,4 @@ export class User extends CoreEntity {
       throw new InternalServerErrorException();
     }
   }
-
-  @Column({ default: false })
-  @Field(() => Boolean)
-  verified: boolean;
 }
