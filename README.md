@@ -38,3 +38,8 @@ The Backend Folder
 - Create Dish
 - Edit Dish
 - Delete Dish
+
+- Orders CRUD
+- Orders Subscription(Owner, Customer, Delivery)
+
+- Payment with Paddle (CRON)
