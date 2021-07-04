@@ -9,7 +9,7 @@ import { Restaurant } from '../entities/restaurant.entity';
 export class RestaurantsInput extends PaginationInput {}
 
 @ObjectType()
-export class RestaurantOutput extends PaginationOutput {
+export class RestaurantsOutput extends PaginationOutput {
   @Field(() => [Restaurant], { nullable: true })
   results?: Restaurant[];
 }
