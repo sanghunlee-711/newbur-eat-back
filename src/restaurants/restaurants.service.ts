@@ -16,6 +16,7 @@ import {
   EditRestaurantInput,
   EditRestaurantOutput,
 } from './dtos/edit-restaurant.dto';
+import { RestaurantOutput, RestaurantsInput } from './dtos/restaurants.dto';
 import { Category } from './entities/category.entity';
 import { Restaurant } from './entities/restaurant.entity';
 import { CategoryRepository } from './respositories/category.repository';
@@ -172,11 +173,11 @@ export class RestaurantService {
         // 2번째 페이지에 가면 25개를 스킵하고 25개를 보여주게 되는 로직임(그러면 25~50까지 보여주니까.)
       });
 
-      category.restaurants = restaurants;
       const totalResults = await this.countRestaurant(category);
 
       return {
         ok: true,
+        restaurants,
         category,
         totalPages: Math.ceil(totalResults / 25),
       };
@@ -184,6 +185,27 @@ export class RestaurantService {
       return {
         ok: false,
         error: 'Could not find categories',
+      };
+    }
+  }
+
+  async allRestaurants({ page }: RestaurantsInput): Promise<RestaurantOutput> {
+    try {
+      const [restaurants, totalResults] = await this.restaurants.findAndCount({
+        skip: (1 - page) * 25,
+        take: 25,
+      });
+
+      return {
+        ok: true,
+        results: restaurants,
+        totalPages: Math.ceil(totalResults / 25),
+        totalResults,
+      };
+    } catch {
+      return {
+        ok: false,
+        error: 'Could not find restaurants',
       };
     }
   }

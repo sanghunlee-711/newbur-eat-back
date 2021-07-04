@@ -24,6 +24,7 @@ import {
   EditRestaurantInput,
   EditRestaurantOutput,
 } from './dtos/edit-restaurant.dto';
+import { RestaurantOutput, RestaurantsInput } from './dtos/restaurants.dto';
 import { Category } from './entities/category.entity';
 import { Restaurant } from './entities/restaurant.entity';
 import { RestaurantService } from './restaurants.service';
@@ -67,6 +68,13 @@ export class RestaurantResolver {
       deleteRestaurantInput,
     );
   }
+
+  @Query(() => RestaurantOutput)
+  restaurants(
+    @Args('input') restaurantInput: RestaurantsInput,
+  ): Promise<RestaurantOutput> {
+    return this.restaurantService.allRestaurants(restaurantInput);
+  }
 }
 
 @Resolver((of) => Category)
@@ -76,7 +84,6 @@ export class CategoryResolver {
   //DB, Entity에 저장,선언되는것이 아니고 Res할때 추가로 넣어서 만들어 줄 수가 있게 됨 -> ResolvedField
   @ResolveField((type) => Int)
   restaurantCount(@Parent() category: Category): Promise<number> {
-    console.log(category);
     return this.restaurantService.countRestaurant(category);
   }
 

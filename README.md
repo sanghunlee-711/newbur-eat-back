@@ -33,6 +33,7 @@ The Backend Folder
 - See Restaurants by Category(pagination)
 - See Restaurants (pagination)
 - See Restaurant
+- Search Restaurants
 
 - Create Dish
 - Edit Dish
