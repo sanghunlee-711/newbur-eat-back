@@ -128,8 +128,6 @@ export class RestaurantService {
     } catch {
       return { ok: false, error: 'Could not delete Restaurant' };
     }
-
-    return { ok: true };
   }
 
   async allCategories(): Promise<AllCategoriesOutput> {
@@ -151,21 +149,36 @@ export class RestaurantService {
     return this.restaurants.count({ category });
   }
 
-  async findCategoryBySlug({ slug }: CategoryInput): Promise<CategoryOutput> {
+  async findCategoryBySlug({
+    slug,
+    page,
+  }: CategoryInput): Promise<CategoryOutput> {
     try {
-      const category = await this.categories.findOne(
-        { slug },
-        { relations: ['restaurants'] },
-      );
+      const category = await this.categories.findOne({ slug });
       if (!category) {
         return {
           ok: false,
           error: 'Category not found',
         };
       }
+
+      const restaurants = await this.restaurants.find({
+        where: {
+          category,
+        },
+        take: 25,
+        skip: (page - 1) * 25,
+        //25개씩 가져올건데 페이지 하나당 25개를 보여줄 것이므로
+        // 2번째 페이지에 가면 25개를 스킵하고 25개를 보여주게 되는 로직임(그러면 25~50까지 보여주니까.)
+      });
+
+      category.restaurants = restaurants;
+      const totalResults = await this.countRestaurant(category);
+
       return {
         ok: true,
         category,
+        totalPages: Math.ceil(totalResults / 25),
       };
     } catch {
       return {
