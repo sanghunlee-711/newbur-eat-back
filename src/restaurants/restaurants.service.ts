@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from 'src/users/entities/user.entity';
-import { Like, Repository } from 'typeorm';
+import { Raw, Repository } from 'typeorm';
 import { AllCategoriesOutput } from './dtos/all-categories.dto';
 import { CategoryInput, CategoryOutput } from './dtos/category.dto';
 import {
@@ -249,7 +249,7 @@ export class RestaurantService {
       const [restaurants, totalResults] = await this.restaurants.findAndCount({
         where: {
           //Like와 %를 이용하면 해당 문구와 관련된 것을 찾아줌 자세한건 링크보고 다시생각하기
-          name: Like(`%${query}%`), //https://www.w3schools.com/sql/sql_like.asp
+          name: Raw((name) => `${name} ILIKE '%${query}%'`), //RawSQL로 작성(대문자 소문자 구붙을 해버리기 때문)
         },
         skip: (page - 1) * 25,
         take: 25,
