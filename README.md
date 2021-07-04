@@ -33,7 +33,13 @@ The Backend Folder
 - See Restaurants by Category(pagination)
 - See Restaurants (pagination)
 - See Restaurant
+- Search Restaurants
 
 - Create Dish
 - Edit Dish
 - Delete Dish
+
+- Orders CRUD
+- Orders Subscription(Owner, Customer, Delivery)
+
+- Payment with Paddle (CRON)
