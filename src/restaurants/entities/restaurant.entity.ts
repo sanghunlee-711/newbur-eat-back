@@ -4,7 +4,7 @@ import { Field, InputType, ObjectType } from '@nestjs/graphql';
 import { IsString, Length } from 'class-validator';
 import { CoreEntity } from 'src/common/entities/core.entity';
 import { User } from 'src/users/entities/user.entity';
-import { Column, Entity, ManyToOne } from 'typeorm';
+import { Column, Entity, ManyToOne, RelationId } from 'typeorm';
 import { Category } from './category.entity';
 @InputType('RestaurantInputType', { isAbstract: true }) //스키마는 하나의 type을 가져야하는데 이렇게 isAbstract옵션을 이용함으로서 다른 곳에서 InputType으로서 사용할 수 있음.
 //InputType으로 쓴다는게 아니라 InputType으로도 extend시킨다는 뜻으로 이해하자!
@@ -22,7 +22,7 @@ export class Restaurant extends CoreEntity {
   @IsString()
   coverImg: string;
 
-  @Field(() => String, { defaultValue: '금호' })
+  @Field(() => String)
   @Column()
   @IsString()
   address: string;
@@ -40,4 +40,9 @@ export class Restaurant extends CoreEntity {
     onDelete: 'CASCADE',
   })
   owner: User;
+
+  //graphql에는 정의하지 않고 typeorm에만 정의해서 사용 > type script에서 restaurant의 owner column은 User타입으로 정의되어 있는데
+  // 이때 새로운 owner만의 id값을 받아오고 싶기 때문이다.
+  @RelationId((restaurant: Restaurant) => restaurant.owner)
+  ownerId: number;
 }
