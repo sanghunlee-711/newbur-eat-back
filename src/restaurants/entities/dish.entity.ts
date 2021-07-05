@@ -10,11 +10,11 @@ class DishOption {
   @Field(() => String)
   name: string;
 
-  @Field(() => [String])
-  choices: string[];
+  @Field(() => [String], { nullable: true })
+  choices?: string[];
 
-  @Field(() => Number)
-  extra: number;
+  @Field(() => Number, { nullable: true })
+  extra?: number;
 }
 
 @InputType('DishInputType', { isAbstract: true })
@@ -32,8 +32,8 @@ export class Dish extends CoreEntity {
   @IsNumber()
   price: number;
 
-  @Field(() => String)
-  @Column({ unique: true })
+  @Field(() => String, { nullable: true })
+  @Column({ nullable: true })
   @IsString()
   //may be url
   photo: string;
@@ -47,6 +47,7 @@ export class Dish extends CoreEntity {
   @Field(() => Restaurant, { nullable: true })
   @ManyToOne(() => Restaurant, (restaurant) => restaurant.menu, {
     onDelete: 'CASCADE', //if the restaurant is deleted the dish would be delted
+    nullable: false,
   })
   restaurant: Restaurant;
 
@@ -55,7 +56,7 @@ export class Dish extends CoreEntity {
 
   //Dish options 를 entity에 넣고싶지 않아서 json파일로 저장할 수 있게됨
   //정형화된 데이터라고 판단되고 굳이 CRUD메서드를 리졸버에서 만드는 수고를하고 싶지 않을 때, 해야할 필요가 없을 때 사용할 수 있음.
-  @Field(() => [DishOption])
-  @Column({ type: 'json' })
-  options: DishOption[];
+  @Field(() => [DishOption], { nullable: true })
+  @Column({ type: 'json', nullable: true })
+  options?: DishOption[];
 }
