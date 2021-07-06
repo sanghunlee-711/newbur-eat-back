@@ -14,8 +14,7 @@ export class OrderResolver {
   @Role(['Client'])
   async createOrder(
     @AuthUser() customer: User,
-    @Args('input')
-    createOrderInput: CreateOrderInput,
+    @Args('input') createOrderInput: CreateOrderInput,
   ): Promise<CreateOrderOutput> {
     return {
       ok: true,
