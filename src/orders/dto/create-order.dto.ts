@@ -1,14 +1,14 @@
 import { Field, InputType, Int, ObjectType } from '@nestjs/graphql';
 import { CoreOutput } from 'src/common/dtos/output.dto';
-import { DishOption } from 'src/restaurants/entities/dish.entity';
+import { OrderItmeOption } from '../entities/order-itme.entity';
 
 @InputType()
 class CreateOrderItemInput {
   @Field(() => Int)
   dishId: number;
 
-  @Field(() => DishOption, { nullable: true })
-  options?: DishOption;
+  @Field(() => [OrderItmeOption], { nullable: true })
+  options?: OrderItmeOption[];
 }
 
 @InputType()
