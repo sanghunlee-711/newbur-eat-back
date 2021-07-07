@@ -37,6 +37,7 @@ export class OrderService {
       //forEach로 에러 핸들링을 위해 return을 한다고 해도 return이 되지 않아서 실행이 될것임
       //그래서 for of로 변경 예정
       let orderFinalPrice = 0;
+      const orderItems: OrderItem[] = [];
       for (const item of items) {
         const dish = await this.dishes.findOne(item.dishId);
 
@@ -73,23 +74,29 @@ export class OrderService {
           }
         }
         orderFinalPrice = orderFinalPrice + dishFinalPrice;
-        // await this.orderItems.save(
-        //   this.orderItems.create({ dish, options: item.options }),
-        // );
-      }
-      console.log('orderFinalPrice', orderFinalPrice);
 
-      //1. order 만듬
-      // const order = await this.orders.save(
-      //   this.orders.create({ customer, restaurant }),
-      // );
-      // console.log(order);
-      //2. item 추가
+        //주문 아이템 추가
+        const orderItem = await this.orderItems.save(
+          this.orderItems.create({
+            dish,
+            options: item.options,
+          }),
+        );
+        orderItems.push(orderItem);
+      }
+
+      await this.orders.save(
+        this.orders.create({
+          customer,
+          restaurant,
+          total: orderFinalPrice,
+          items: orderItems,
+        }),
+      );
 
       return { ok: true };
     } catch (error) {
-      return { ok: false, error };
-      console.log(error);
+      return { ok: false, error: 'Could not create order' };
     }
   }
 }
