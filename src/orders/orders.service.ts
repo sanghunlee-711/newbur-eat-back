@@ -36,21 +36,48 @@ export class OrderService {
       }
       //forEach로 에러 핸들링을 위해 return을 한다고 해도 return이 되지 않아서 실행이 될것임
       //그래서 for of로 변경 예정
-      items.forEach(async (item) => {
+      let orderFinalPrice = 0;
+      for (const item of items) {
         const dish = await this.dishes.findOne(item.dishId);
 
         if (!dish) {
           //abort this whole thing
           return {
             ok: false,
-            errork: 'Could not find dish',
+            error: 'Dish not found',
           };
         }
+        let dishFinalPrice = dish.price;
+        console.log(`Dish Price : ${dish.price}`);
+        for (const itemOption of item.options) {
+          const dishOption = dish.options.find(
+            (dishOption) => dishOption.name === itemOption.name,
+          );
+          if (dishOption.extra) {
+            dishFinalPrice = dishFinalPrice + dishOption.extra;
+            console.log(`$USD + ${dishOption.extra}`);
+          } else {
+            const dishOptionsChoice = dishOption.choices.find(
+              (optionChoice) => optionChoice.name === itemOption.choice,
+            );
 
-        await this.orderItems.save(
-          this.orderItems.create({ dish, options: item.options }),
-        );
-      });
+            if (dishOptionsChoice) {
+              if (dishOptionsChoice.extra) {
+                dishFinalPrice = dishFinalPrice + dishOptionsChoice.extra;
+                console.log(
+                  `$USD + ${dishOptionsChoice.extra} > optionChoice extra`,
+                );
+              }
+            }
+            console.log(dishOptionsChoice);
+          }
+        }
+        orderFinalPrice = orderFinalPrice + dishFinalPrice;
+        // await this.orderItems.save(
+        //   this.orderItems.create({ dish, options: item.options }),
+        // );
+      }
+      console.log('orderFinalPrice', orderFinalPrice);
 
       //1. order 만듬
       // const order = await this.orders.save(
