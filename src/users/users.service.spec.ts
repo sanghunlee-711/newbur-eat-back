@@ -79,9 +79,9 @@ describe('User Service', () => {
 
   describe('createAccount', () => {
     const createAccountArgs = {
-      email: '',
-      password: '',
-      role: 0,
+      email: 'test@test.com',
+      password: 'testtest22',
+      role: 'Client',
     };
 
     it('Should fail if user exists', async () => {
@@ -102,7 +102,7 @@ describe('User Service', () => {
         email: '',
       });
 
-      const result = await service.createAccount(createAccountArgs);
+      const result = await service.createAccount({ ...createAccountArgs });
 
       expect(result).toMatchObject({
         ok: false,
