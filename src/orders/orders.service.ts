@@ -5,7 +5,8 @@ import { Restaurant } from 'src/restaurants/entities/restaurant.entity';
 import { User, UserRole } from 'src/users/entities/user.entity';
 import { Repository } from 'typeorm';
 import { CreateOrderInput, CreateOrderOutput } from './dto/create-order.dto';
-import { GetOrdersInputType, GetOrdersOutputType } from './dto/get-orders.dto';
+import { GetOrderInput, GetOrderOutput } from './dto/get-order.dto';
+import { GetOrdersInput, GetOrdersOutput } from './dto/get-orders.dto';
 import { OrderItem } from './entities/order-itme.entity';
 import { Order } from './entities/order.entity';
 
@@ -103,8 +104,8 @@ export class OrderService {
 
   async getOrders(
     user: User,
-    { status }: GetOrdersInputType,
-  ): Promise<GetOrdersOutputType> {
+    { status }: GetOrdersInput,
+  ): Promise<GetOrdersOutput> {
     try {
       let orders: Order[];
 
@@ -142,6 +143,55 @@ export class OrderService {
         ok: false,
         error: 'Could not get orders',
       };
+    }
+  }
+
+  async getOrder(
+    user: User,
+    //객체 구조분해 하면서 이름 바꿔주고 싶으면 아래와 같이 하면됨 (기존id , 변경:orderId)
+    { id: orderId }: GetOrderInput,
+  ): Promise<GetOrderOutput> {
+    try {
+      const order = await this.orders.findOne(orderId, {
+        relations: ['restaurant'],
+      });
+      if (!order) {
+        return {
+          ok: false,
+          error: 'order not found',
+        };
+      }
+
+      //under for rejecting different id
+      let canSee = true;
+      if (user.role === UserRole.Client && order.customerId !== user.id) {
+        canSee = false;
+      }
+
+      if (user.role === UserRole.Delivery && order.driverId !== user.id) {
+        canSee = false;
+      }
+
+      if (
+        user.role === UserRole.Owner &&
+        order.restaurant.ownerId !== user.id
+      ) {
+        canSee = false;
+      }
+
+      if (!canSee) {
+        return {
+          ok: false,
+          error: "You can't see that",
+        };
+      }
+
+      return {
+        ok: true,
+        order,
+      };
+    } catch {
+      return { ok: false, error: 'Could not load order' };
     }
   }
 }
