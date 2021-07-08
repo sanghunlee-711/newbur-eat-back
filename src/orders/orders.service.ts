@@ -2,9 +2,10 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Dish } from 'src/restaurants/entities/dish.entity';
 import { Restaurant } from 'src/restaurants/entities/restaurant.entity';
-import { User } from 'src/users/entities/user.entity';
+import { User, UserRole } from 'src/users/entities/user.entity';
 import { Repository } from 'typeorm';
 import { CreateOrderInput, CreateOrderOutput } from './dto/create-order.dto';
+import { GetOrdersInputType, GetOrdersOutputType } from './dto/get-orders.dto';
 import { OrderItem } from './entities/order-itme.entity';
 import { Order } from './entities/order.entity';
 
@@ -97,6 +98,50 @@ export class OrderService {
       return { ok: true };
     } catch (error) {
       return { ok: false, error: 'Could not create order' };
+    }
+  }
+
+  async getOrders(
+    user: User,
+    { status }: GetOrdersInputType,
+  ): Promise<GetOrdersOutputType> {
+    try {
+      let orders: Order[];
+
+      if (user.role === UserRole.Client) {
+        orders = await this.orders.find({
+          where: { customer: user, ...(status && { status }) },
+        });
+      } else if (user.role === UserRole.Delivery) {
+        orders = await this.orders.find({
+          where: { driver: user, ...(status && { status }) },
+        });
+      } else if (user.role === UserRole.Owner) {
+        const restaurants = await this.restaurants.find({
+          where: { owner: user },
+          relations: ['orders'],
+        });
+        // console.log(restaurants);
+
+        orders = restaurants.map((restaurant) => restaurant.orders).flat(1);
+        if (status) {
+          orders = orders.filter((order) => order.status === status);
+        }
+
+        // //flat은 배열 한단계 앞으로 꺼내주는 역할이고 reduce메서드로도 재현가능함 -> js에서는 es 2019부터 사용가능
+        // console.log(
+        //   restaurants
+        //     .map((restaurant) => restaurant.orders)
+        //     .reduce((acc, val) => acc.concat(val), []),
+        // );
+        // console.log(orders);
+      }
+      return { ok: true, orders };
+    } catch (error) {
+      return {
+        ok: false,
+        error: 'Could not get orders',
+      };
     }
   }
 }
