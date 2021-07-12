@@ -65,8 +65,22 @@ import { UsersModule } from './users/users.module';
       ],
     }),
     GraphQLModule.forRoot({
+      installSubscriptionHandlers: true, //서버가 웹소켓 기능을 가지게 만드는 설정
       autoSchemaFile: true,
-      context: ({ req }) => ({ user: req['user'] }),
+      context: ({ req, connection }) => {
+        //console.log(req);
+        //웹소켓에 연결할때는 http의 연결과는 다르게 req가 없음 , 연결된 상태면 계속 연결되어 있게됨 -> 쿠키같은게 따로 존재 X
+        //따라서 웹소켓에 맞는 프로토콜이 필요함 -> 그게 connection임
+
+        //http프로토콜인 경우 아래와 같이 req가 존재하므로 기존의 방식대로
+        if (req) {
+          return { user: req['user'] };
+          //그게 아닌 (웹소켓인 경우) connection프로토콜을 이용하므로 다르게 처리
+          //웹소켓인 경우 한번 커넥션이 일어날때 말고는 따로 토큰등이 교환되지 않고 서로 연결된 상태를 유지하게 됨
+        } else {
+          console.log(connection);
+        }
+      },
     }),
 
     JwtModule.forRoot({

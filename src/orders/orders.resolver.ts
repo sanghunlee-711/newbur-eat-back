@@ -1,4 +1,5 @@
-import { Args, Mutation, Query, Resolver } from '@nestjs/graphql';
+import { Args, Mutation, Query, Resolver, Subscription } from '@nestjs/graphql';
+import { PubSub } from 'graphql-subscriptions';
 import { AuthUser } from 'src/auth/auth.user.decorator';
 import { Role } from 'src/auth/role.decorator';
 import { User } from 'src/users/entities/user.entity';
@@ -8,6 +9,8 @@ import { GetOrderInput, GetOrderOutput } from './dto/get-order.dto';
 import { GetOrdersInput, GetOrdersOutput } from './dto/get-orders.dto';
 import { Order } from './entities/order.entity';
 import { OrderService } from './orders.service';
+
+const pubsub = new PubSub();
 
 @Resolver(() => Order)
 export class OrderResolver {
@@ -47,5 +50,19 @@ export class OrderResolver {
     @Args('input') editOrderInput: EditOrderInput,
   ): Promise<EditOrderOutput> {
     return this.orderService.editOrder(user, editOrderInput);
+  }
+
+  @Mutation(() => Boolean)
+  potatoReady() {
+    //potatoReady는 asyncIterator(hotPotatos)를 발생시키는 작업을 한다.
+    //트리거 이름과 publish이름은 같아야함(hotPotato)
+    //publish의 payload는 객체여야하고 Mutation function과 이름이 같으면 됨 readyPotato
+    pubsub.publish('hotPotato', { readyPotato: 'potato is ready :)' });
+    return true;
+  }
+
+  @Subscription(() => String)
+  readyPotato() {
+    return pubsub.asyncIterator('hotPotato');
   }
 }
