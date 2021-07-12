@@ -240,7 +240,7 @@ export class OrderService {
       if (!canEdit) {
         return {
           ok: false,
-          error: "Tou can't do that.",
+          error: "You can't do that.",
         };
       }
 
