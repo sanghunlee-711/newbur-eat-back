@@ -1,7 +1,9 @@
+import { Inject } from '@nestjs/common';
 import { Args, Mutation, Query, Resolver, Subscription } from '@nestjs/graphql';
 import { PubSub } from 'graphql-subscriptions';
 import { AuthUser } from 'src/auth/auth.user.decorator';
 import { Role } from 'src/auth/role.decorator';
+import { PUB_SUB } from 'src/common/common.constants';
 import { User } from 'src/users/entities/user.entity';
 import { CreateOrderInput, CreateOrderOutput } from './dto/create-order.dto';
 import { EditOrderInput, EditOrderOutput } from './dto/edit-order.dto';
@@ -10,11 +12,12 @@ import { GetOrdersInput, GetOrdersOutput } from './dto/get-orders.dto';
 import { Order } from './entities/order.entity';
 import { OrderService } from './orders.service';
 
-const pubsub = new PubSub();
-
 @Resolver(() => Order)
 export class OrderResolver {
-  constructor(private readonly orderService: OrderService) {}
+  constructor(
+    private readonly orderService: OrderService,
+    @Inject(PUB_SUB) private readonly pubSub: PubSub,
+  ) {}
 
   @Mutation(() => CreateOrderOutput)
   @Role(['Client'])
@@ -57,7 +60,7 @@ export class OrderResolver {
     //potatoReady는 asyncIterator(hotPotatos)를 발생시키는 작업을 한다.
     //트리거 이름과 publish이름은 같아야함(hotPotato)
     //publish의 payload는 객체여야하고 Mutation function과 이름이 같으면 됨 readyPotato
-    pubsub.publish('hotPotato', { readyPotato: 'potato is ready :)' });
+    this.pubSub.publish('hotPotato', { readyPotato: 'potato is ready :)' });
     return true;
   }
 
@@ -65,6 +68,6 @@ export class OrderResolver {
   @Role(['Any'])
   readyPotato(@AuthUser() user: User) {
     console.log(user);
-    return pubsub.asyncIterator('hotPotato');
+    return this.pubSub.asyncIterator('hotPotato');
   }
 }
