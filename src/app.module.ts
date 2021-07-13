@@ -2,7 +2,7 @@ import {
   MiddlewareConsumer,
   Module,
   NestModule,
-  RequestMethod,
+  RequestMethod
 } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { GraphQLModule } from '@nestjs/graphql';
@@ -78,7 +78,7 @@ import { UsersModule } from './users/users.module';
           //그게 아닌 (웹소켓인 경우) connection프로토콜을 이용하므로 다르게 처리
           //웹소켓인 경우 한번 커넥션이 일어날때 말고는 따로 토큰등이 교환되지 않고 서로 연결된 상태를 유지하게 됨
         } else {
-          console.log(connection);
+          // console.log(connection);
         }
       },
     }),
@@ -99,6 +99,8 @@ import { UsersModule } from './users/users.module';
   controllers: [],
   providers: [],
 })
+
+//Authentication Handle by adapting jwtMiddleware
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
     consumer.apply(JwtMiddleware).forRoutes({
