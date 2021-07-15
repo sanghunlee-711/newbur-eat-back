@@ -3,12 +3,19 @@ import { Args, Mutation, Query, Resolver, Subscription } from '@nestjs/graphql';
 import { PubSub } from 'graphql-subscriptions';
 import { AuthUser } from 'src/auth/auth.user.decorator';
 import { Role } from 'src/auth/role.decorator';
-import { NEW_PENDING_ORDER, PUB_SUB } from 'src/common/common.constants';
+import {
+  NEW_COOKED_ORDER,
+  NEW_ORDER_UPDATE,
+  NEW_PENDING_ORDER,
+  PUB_SUB,
+} from 'src/common/common.constants';
 import { User } from 'src/users/entities/user.entity';
 import { CreateOrderInput, CreateOrderOutput } from './dto/create-order.dto';
 import { EditOrderInput, EditOrderOutput } from './dto/edit-order.dto';
 import { GetOrderInput, GetOrderOutput } from './dto/get-order.dto';
 import { GetOrdersInput, GetOrdersOutput } from './dto/get-orders.dto';
+import { OrderUpdatesInput } from './dto/order-update.dto';
+import { TakeOrderInput, TakeOrderOutput } from './dto/take-order.dto';
 import { Order } from './entities/order.entity';
 import { OrderService } from './orders.service';
 
@@ -70,5 +77,54 @@ export class OrderResolver {
   @Role(['Owner'])
   pendingOrders() {
     return this.pubSub.asyncIterator(NEW_PENDING_ORDER);
+  }
+
+  //only for driver
+  //드라이버에게 배달 가능한 모든케이스를 보여주기 위해서 필터메서드 미사용
+  @Subscription(() => Order)
+  @Role(['Delivery'])
+  cookedOrders() {
+    return this.pubSub.asyncIterator(NEW_COOKED_ORDER);
+  }
+
+  @Subscription(() => Order, {
+    filter: (
+      //유저가 원하는 order의 업데이트만 보게 하기 위해서 filter메서드 사용
+      { orderUpdates: order }: { orderUpdates: Order },
+      { input }: { input: OrderUpdatesInput },
+      { user }: { user: User },
+    ) => {
+      console.log(
+        order.driverId,
+        order.customerId,
+        order.restaurant.ownerId,
+        user.id,
+        order.id,
+        input.id,
+      );
+      if (
+        // order.driverId !== null && //driverId null처리되어 들어간거 처리 필요할듯 ;
+        order.driverId !== user.id &&
+        order.customerId !== user.id &&
+        order.restaurant.ownerId !== user.id
+      ) {
+        return false;
+      }
+
+      return order.id === input.id;
+    },
+  })
+  @Role(['Any'])
+  orderUpdates(@Args('input') orderUpdatesInput: OrderUpdatesInput) {
+    return this.pubSub.asyncIterator(NEW_ORDER_UPDATE);
+  }
+
+  @Mutation(() => TakeOrderOutput)
+  @Role(['Delivery'])
+  takeOrder(
+    @AuthUser() driver: User,
+    @Args('input') takeOrderInput: TakeOrderInput,
+  ): Promise<TakeOrderOutput> {
+    return this.orderService.takeOrder(driver, takeOrderInput);
   }
 }

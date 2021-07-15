@@ -40,6 +40,7 @@ export class Order extends CoreEntity {
   @ManyToOne(() => User, (user) => user.orders, {
     onDelete: 'SET NULL', //if delete user won't delete user
     nullable: true,
+    eager: true, //order table을 가져오면 자동으로 customer정보까지 함께주는 설정(LazyRelation도 있다)
   })
   customer?: User;
 
@@ -50,16 +51,18 @@ export class Order extends CoreEntity {
   @ManyToOne(() => User, (user) => user.rides, {
     onDelete: 'SET NULL',
     nullable: true,
+    eager: true,
   })
   driver?: User;
 
   @RelationId((order: Order) => order.driver)
-  driverId: number;
+  driverId?: number;
 
   @Field(() => Restaurant, { nullable: true })
   @ManyToOne(() => Restaurant, (restaurant) => restaurant.orders, {
     onDelete: 'SET NULL',
     nullable: true,
+    eager: true,
   })
   restaurant?: Restaurant;
 
@@ -70,7 +73,7 @@ export class Order extends CoreEntity {
   //dishes -> items 로 변경한 이유는 그대로 두면 음식마다의 모든 옵션을 불러오기 때문에 분리하기 위해서임
   //OrderItem entity 참고!
   @Field(() => [OrderItem])
-  @ManyToMany(() => OrderItem)
+  @ManyToMany(() => OrderItem, { eager: true })
   @JoinTable()
   items: OrderItem[];
 

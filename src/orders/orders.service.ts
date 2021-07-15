@@ -1,7 +1,12 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { PubSub } from 'graphql-subscriptions';
-import { NEW_PENDING_ORDER, PUB_SUB } from 'src/common/common.constants';
+import {
+  NEW_COOKED_ORDER,
+  NEW_ORDER_UPDATE,
+  NEW_PENDING_ORDER,
+  PUB_SUB,
+} from 'src/common/common.constants';
 import { Dish } from 'src/restaurants/entities/dish.entity';
 import { Restaurant } from 'src/restaurants/entities/restaurant.entity';
 import { User, UserRole } from 'src/users/entities/user.entity';
@@ -10,6 +15,7 @@ import { CreateOrderInput, CreateOrderOutput } from './dto/create-order.dto';
 import { EditOrderInput, EditOrderOutput } from './dto/edit-order.dto';
 import { GetOrderInput, GetOrderOutput } from './dto/get-order.dto';
 import { GetOrdersInput, GetOrdersOutput } from './dto/get-orders.dto';
+import { TakeOrderInput, TakeOrderOutput } from './dto/take-order.dto';
 import { OrderItem } from './entities/order-itme.entity';
 import { Order, OrderStatus } from './entities/order.entity';
 
@@ -205,9 +211,7 @@ export class OrderService {
     { id: orderId, status }: EditOrderInput,
   ): Promise<EditOrderOutput> {
     try {
-      const order = await this.orders.findOne(orderId, {
-        relations: ['restaurants'],
-      });
+      const order = await this.orders.findOne(orderId);
       if (!order) {
         return {
           ok: false,
@@ -249,12 +253,65 @@ export class OrderService {
         };
       }
 
-      await this.orders.save([
-        {
-          id: orderId,
-          status,
-        },
-      ]);
+      //save메서드를 변경을 위해 쓰면 관계된 정보를 가져올수 없음
+      //+ 그냥 변경을 위해 인자로 넣어줬던 값만 반환하게 됨
+      //그래서 subscription의 페이로더로 쓸 수 없다.
+      await this.orders.save({
+        id: orderId,
+        status,
+      });
+
+      const newOrder = { ...order, status };
+      if (user.role === UserRole.Owner) {
+        if (status === OrderStatus.Cooked) {
+          console.log(newOrder);
+
+          await this.pubSub.publish(NEW_COOKED_ORDER, {
+            //order는 기존의 status를 가지고 있을 것 이기 때문에 이렇게 바꿔줘야함
+            //sava의 return값을 쓰지 못해서 이렇게 진행
+            cookedOrders: newOrder,
+          });
+        }
+      }
+      await this.pubSub.publish(NEW_ORDER_UPDATE, { orderUpdates: newOrder });
+      return {
+        ok: true,
+      };
+    } catch (error) {
+      console.log(error);
+      return {
+        ok: false,
+        error: 'Could not edit order',
+      };
+    }
+  }
+
+  async takeOrder(
+    driver: User,
+    { id: orderId }: TakeOrderInput,
+  ): Promise<TakeOrderOutput> {
+    try {
+      const order = await this.orders.findOne(orderId);
+      if (!order) {
+        return {
+          ok: false,
+          error: 'Could not find order',
+        };
+      }
+      if (order.driver) {
+        return {
+          ok: false,
+          error: 'This order already has a driver',
+        };
+      }
+      await this.orders.save({
+        id: orderId,
+        driver,
+      });
+
+      await this.pubSub.publish(NEW_ORDER_UPDATE, {
+        orderUpdates: { ...order, driver },
+      });
 
       return {
         ok: true,
@@ -262,7 +319,7 @@ export class OrderService {
     } catch {
       return {
         ok: false,
-        error: 'Could not edit order',
+        error: 'Could not update order.',
       };
     }
   }
