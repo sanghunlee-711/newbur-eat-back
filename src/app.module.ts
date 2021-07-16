@@ -10,6 +10,8 @@ import { MailModule } from './mail/mail.module';
 import { OrderItem } from './orders/entities/order-itme.entity';
 import { Order } from './orders/entities/order.entity';
 import { OrdersModule } from './orders/orders.module';
+import { Payment } from './payments/entities/payment.entities';
+import { PaymentsModule } from './payments/payments.module';
 import { Category } from './restaurants/entities/category.entity';
 import { Dish } from './restaurants/entities/dish.entity';
 import { Restaurant } from './restaurants/entities/restaurant.entity';
@@ -57,6 +59,7 @@ import { UsersModule } from './users/users.module';
         Dish,
         Order,
         OrderItem,
+        Payment,
       ],
     }),
     GraphQLModule.forRoot({
@@ -83,6 +86,7 @@ import { UsersModule } from './users/users.module';
     AuthModule,
     OrdersModule,
     CommonModule,
+    PaymentsModule,
   ],
   controllers: [],
   providers: [],

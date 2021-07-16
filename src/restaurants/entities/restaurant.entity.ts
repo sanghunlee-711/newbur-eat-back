@@ -56,4 +56,6 @@ export class Restaurant extends CoreEntity {
   @Field(() => [Order])
   @OneToMany(() => Order, (order) => order.restaurant)
   orders: Order[];
+
+  // 레스토랑에서 payment로 접근할 일이 없기 때문에 여기에 따로 restaurant를 선언해주지 않는다.
 }
