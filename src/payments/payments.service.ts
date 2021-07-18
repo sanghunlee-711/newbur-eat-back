@@ -1,8 +1,9 @@
 import { Injectable } from '@nestjs/common';
+import { Interval, SchedulerRegistry } from '@nestjs/schedule';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Restaurant } from 'src/restaurants/entities/restaurant.entity';
 import { User } from 'src/users/entities/user.entity';
-import { Repository } from 'typeorm';
+import { LessThan, Repository } from 'typeorm';
 import {
   CreatePaymentInput,
   CreatePaymentOutput,
@@ -17,6 +18,7 @@ export class PaymentService {
     private readonly payments: Repository<Payment>,
     @InjectRepository(Restaurant)
     private readonly restaurants: Repository<Restaurant>,
+    private shedulerRegistry: SchedulerRegistry,
   ) {}
 
   async createPayment(
@@ -51,6 +53,13 @@ export class PaymentService {
         }),
       );
 
+      restaurant.isPromoted = true;
+      const date = new Date();
+      date.setDate(date.getDate() + 7);
+      restaurant.promotedUntil = date;
+
+      await this.restaurants.save(restaurant);
+
       return {
         ok: true,
       };
@@ -76,5 +85,21 @@ export class PaymentService {
         error: 'Could not load payments',
       };
     }
+  }
+
+  @Interval(2000)
+  async checkPromotedRestaurants() {
+    const restaurants = await this.restaurants.find({
+      isPromoted: true,
+      promotedUntil: LessThan(new Date()),
+      //isPromoted로 다 찾고 반복문을 통해서 날짜가 오늘보다 작은 날들을 찾아내는 것도 방법임
+      //하지만 위와같이 typeORM의 내장메서드를 통해서 애초에  찾아서 나올때 부터  조건을 걸 수도 있다.
+    });
+    console.log(restaurants);
+    restaurants.forEach(async (restaurant) => {
+      restaurant.isPromoted = false;
+      restaurant.promotedUntil = null;
+      await this.restaurants.save(restaurant);
+    });
   }
 }
