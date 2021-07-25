@@ -178,11 +178,11 @@ export class RestaurantService {
         where: {
           category,
         },
-        take: 25,
-        skip: (page - 1) * 25,
+        take: 3,
+        skip: (page - 1) * 3,
 
-        //25개씩 가져올건데 페이지 하나당 25개를 보여줄 것이므로
-        // 2번째 페이지에 가면 25개를 스킵하고 25개를 보여주게 되는 로직임(그러면 25~50까지 보여주니까.)
+        //3개씩 가져올건데 페이지 하나당 3개를 보여줄 것이므로
+        // 2번째 페이지에 가면 3개를 스킵하고 3개를 보여주게 되는 로직임(그러면 3~50까지 보여주니까.)
         order: {
           isPromoted: 'DESC',
         },
@@ -194,7 +194,7 @@ export class RestaurantService {
         ok: true,
         restaurants,
         category,
-        totalPages: Math.ceil(totalResults / 25),
+        totalPages: Math.ceil(totalResults / 3),
       };
     } catch {
       return {
@@ -207,8 +207,8 @@ export class RestaurantService {
   async allRestaurants({ page }: RestaurantsInput): Promise<RestaurantsOutput> {
     try {
       const [restaurants, totalResults] = await this.restaurants.findAndCount({
-        skip: (1 - page) * 25,
-        take: 25,
+        skip: (1 - page) * 3,
+        take: 3,
         order: {
           isPromoted: 'DESC',
         },
@@ -217,7 +217,7 @@ export class RestaurantService {
       return {
         ok: true,
         results: restaurants,
-        totalPages: Math.ceil(totalResults / 25),
+        totalPages: Math.ceil(totalResults / 3),
         totalResults,
       };
     } catch {
@@ -266,15 +266,15 @@ export class RestaurantService {
           //Like와 %를 이용하면 해당 문구와 관련된 것을 찾아줌 자세한건 링크보고 다시생각하기
           name: Raw((name) => `${name} ILIKE '%${query}%'`), //RawSQL로 작성(대문자 소문자 구붙을 해버리기 때문)
         },
-        skip: (page - 1) * 25,
-        take: 25,
+        skip: (page - 1) * 3,
+        take: 3,
       });
 
       return {
         ok: true,
         restaurants,
         totalResults,
-        totalPages: Math.ceil(totalResults / 25),
+        totalPages: Math.ceil(totalResults / 3),
       };
     } catch {
       return {
