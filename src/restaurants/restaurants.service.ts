@@ -178,14 +178,15 @@ export class RestaurantService {
         where: {
           category,
         },
+        order: {
+          isPromoted: 'DESC',
+        },
+
         take: 25,
         skip: (page - 1) * 25,
 
         //25개씩 가져올건데 페이지 하나당 25개를 보여줄 것이므로
         // 2번째 페이지에 가면 25개를 스킵하고 25개를 보여주게 되는 로직임(그러면 25~50까지 보여주니까.)
-        order: {
-          isPromoted: 'DESC',
-        },
       });
 
       const totalResults = await this.countRestaurant(category);
@@ -207,8 +208,8 @@ export class RestaurantService {
   async allRestaurants({ page }: RestaurantsInput): Promise<RestaurantsOutput> {
     try {
       const [restaurants, totalResults] = await this.restaurants.findAndCount({
-        skip: (1 - page) * 25,
-        take: 25,
+        skip: (page - 1) * 3,
+        take: 3,
         order: {
           isPromoted: 'DESC',
         },
@@ -217,7 +218,7 @@ export class RestaurantService {
       return {
         ok: true,
         results: restaurants,
-        totalPages: Math.ceil(totalResults / 25),
+        totalPages: Math.ceil(totalResults / 3),
         totalResults,
       };
     } catch {
