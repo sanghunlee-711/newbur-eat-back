@@ -20,6 +20,7 @@ import { RestaurantsModule } from './restaurants/restaurants.module';
 import { User } from './users/entities/user.entity';
 import { Verification } from './users/entities/verification.entity';
 import { UsersModule } from './users/users.module';
+import { UploadsModule } from './uploads/uploads.module';
 
 @Module({
   //forRoot는 모듈의 루트를 잡아주기 위해서 import하는것
@@ -88,6 +89,7 @@ import { UsersModule } from './users/users.module';
     OrdersModule,
     CommonModule,
     PaymentsModule,
+    UploadsModule,
   ],
   controllers: [],
   providers: [],
