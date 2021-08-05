@@ -391,7 +391,6 @@ export class RestaurantService {
         },
       }); //owner id를 통해서 조인해서 찾을거라 생각했는데  흠 ....
 
-      console.log(restaurants);
       // const testRestaurants = await this.restaurants.find({ owner }); //니코스타일
 
       return {
