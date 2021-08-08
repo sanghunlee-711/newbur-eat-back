@@ -1,0 +1,15 @@
+[Add] AWS S3 File Upload api
+# Please enter the commit message for your changes. Lines starting
+# with '#' will be ignored, and an empty message aborts the commit.
+#
+# Committer: cloudlee <cloudlee@MacBook-Pro-9.local>
+#
+# On branch feature/payment
+# Changes to be committed:
+#	modified:   package-lock.json
+#	modified:   package.json
+#	modified:   src/app.module.ts
+#	modified:   src/restaurants/restaurants.service.ts
+#	new file:   src/uploads/uploads.controller.ts
+#	new file:   src/uploads/uploads.module.ts
+#
