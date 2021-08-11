@@ -1,6 +1,6 @@
 //dto: data transfer object
 
-import { Field, InputType, ObjectType, PickType } from '@nestjs/graphql';
+import { Field, InputType, Int, ObjectType, PickType } from '@nestjs/graphql';
 import { CoreOutput } from 'src/common/dtos/output.dto';
 import { Restaurant } from '../entities/restaurant.entity';
 
@@ -18,4 +18,7 @@ export class CreateRestaurantInput extends PickType(Restaurant, [
 }
 
 @ObjectType()
-export class CreateRestaurantOutPut extends CoreOutput {}
+export class CreateRestaurantOutPut extends CoreOutput {
+  @Field(() => Int)
+  restaurantId?: number;
+}
