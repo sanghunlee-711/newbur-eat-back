@@ -70,7 +70,7 @@ export class OrderService {
             dishFinalPrice = dishFinalPrice + dishOption.extra;
             console.log(`$USD + ${dishOption.extra}`);
           } else {
-            const dishOptionsChoice = dishOption.choices.find(
+            const dishOptionsChoice = dishOption.choices?.find(
               (optionChoice) => optionChoice.name === itemOption.choice,
             );
 
@@ -108,7 +108,7 @@ export class OrderService {
       await this.pubSub.publish(NEW_PENDING_ORDER, {
         pendingOrders: { order, ownerId: restaurant.ownerId },
       });
-      return { ok: true };
+      return { ok: true, orderId: order.id };
     } catch (error) {
       return { ok: false, error: 'Could not create order' };
     }
@@ -206,12 +206,14 @@ export class OrderService {
       return { ok: false, error: 'Could not load order' };
     }
   }
+
   async editOrder(
     user: User,
     { id: orderId, status }: EditOrderInput,
   ): Promise<EditOrderOutput> {
     try {
       const order = await this.orders.findOne(orderId);
+
       if (!order) {
         return {
           ok: false,
