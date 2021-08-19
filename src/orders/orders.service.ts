@@ -206,12 +206,14 @@ export class OrderService {
       return { ok: false, error: 'Could not load order' };
     }
   }
+
   async editOrder(
     user: User,
     { id: orderId, status }: EditOrderInput,
   ): Promise<EditOrderOutput> {
     try {
       const order = await this.orders.findOne(orderId);
+
       if (!order) {
         return {
           ok: false,
