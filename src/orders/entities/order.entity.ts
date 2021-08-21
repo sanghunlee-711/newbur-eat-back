@@ -56,7 +56,7 @@ export class Order extends CoreEntity {
   driver?: User;
 
   @RelationId((order: Order) => order.driver)
-  driverId?: number;
+  driverId: number;
 
   @Field(() => Restaurant, { nullable: true })
   @ManyToOne(() => Restaurant, (restaurant) => restaurant.orders, {
