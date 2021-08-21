@@ -28,9 +28,9 @@ import { UsersModule } from './users/users.module';
     ConfigModule.forRoot({
       isGlobal: true, //어디서든 .env에 접근가능
       envFilePath: process.env.NODE_ENV === 'dev' ? '.env.dev' : '.env.test',
-      ignoreEnvFile: process.env.NODE_ENV === 'prod', //배포용일때는 .env파일을 사용하지 않기 위한 옵션
+      ignoreEnvFile: process.env.NODE_ENV === 'production', //배포용일때는 .env파일을 사용하지 않기 위한 옵션
       validationSchema: Joi.object({
-        NODE_ENV: Joi.string().valid('dev', 'prod', 'test').required(), //환경변수(process.env)의 유효성 검사를 위해 Joi 모듈을 통해 검사
+        NODE_ENV: Joi.string().valid('dev', 'production', 'test').required(), //환경변수(process.env)의 유효성 검사를 위해 Joi 모듈을 통해 검사
         DB_HOST: Joi.string(),
         DB_PORT: Joi.string(),
         DB_USERNAME: Joi.string(),
@@ -69,7 +69,7 @@ import { UsersModule } from './users/users.module';
       ],
     }),
     GraphQLModule.forRoot({
-      playground: process.env.NODE_ENV !== 'prod', //배포 버전에서는 playground 접근을 막음
+      playground: process.env.NODE_ENV !== 'production', //배포 버전에서는 playground 접근을 막음
       installSubscriptionHandlers: true, //서버가 웹소켓 기능을 가지게 만드는 설정
       autoSchemaFile: true,
       context: ({ req, connection }) => {
