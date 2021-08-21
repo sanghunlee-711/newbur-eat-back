@@ -17,10 +17,10 @@ import { Category } from './restaurants/entities/category.entity';
 import { Dish } from './restaurants/entities/dish.entity';
 import { Restaurant } from './restaurants/entities/restaurant.entity';
 import { RestaurantsModule } from './restaurants/restaurants.module';
+import { UploadsModule } from './uploads/uploads.module';
 import { User } from './users/entities/user.entity';
 import { Verification } from './users/entities/verification.entity';
 import { UsersModule } from './users/users.module';
-import { UploadsModule } from './uploads/uploads.module';
 
 @Module({
   //forRoot는 모듈의 루트를 잡아주기 위해서 import하는것
@@ -65,6 +65,7 @@ import { UploadsModule } from './uploads/uploads.module';
       ],
     }),
     GraphQLModule.forRoot({
+      playground: process.env.NODE_ENV !== 'prod', //배포 버전에서는 playground 접근을 막음
       installSubscriptionHandlers: true, //서버가 웹소켓 기능을 가지게 만드는 설정
       autoSchemaFile: true,
       context: ({ req, connection }) => {
