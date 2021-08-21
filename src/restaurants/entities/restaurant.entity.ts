@@ -49,14 +49,14 @@ export class Restaurant extends CoreEntity {
   @RelationId((restaurant: Restaurant) => restaurant.owner)
   ownerId: number;
 
+  @Field(() => [Order])
+  @OneToMany(() => Order, (order) => order.restaurant)
+  orders: Order[];
+
   // 하나의 레스토랑은 많은 Dish를 가짐, Dish는 하나의 레스토랑을 가짐
   @Field(() => [Dish])
   @OneToMany(() => Dish, (dish) => dish.restaurant)
   menu: Dish[];
-
-  @Field(() => [Order])
-  @OneToMany(() => Order, (order) => order.restaurant)
-  orders: Order[];
 
   // 레스토랑에서 payment로 접근할 일이 없기 때문에 여기에 따로 restaurant를 선언해주지 않는다.
 

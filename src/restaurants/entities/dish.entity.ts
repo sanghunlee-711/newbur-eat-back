@@ -14,7 +14,7 @@ export class DishChoice {
   extra?: number;
 }
 
-@InputType('DishOptionsInputType', { isAbstract: true })
+@InputType('DishOptionInputType', { isAbstract: true })
 @ObjectType()
 export class DishOption {
   @Field(() => String)
